@@ -46,38 +46,35 @@ export default {
         },
         // refreshToken으로 accessToken을 갱신하는 메서드
         async refreshAccessToken() {
-            const refreshToken = localStorage.getItem("refreshToken");
-            if (refreshToken) {
-                try {
-                    const response = await axios.post("/api/v1/auth/refresh",
-                        {
-                            refreshToken,
-                        }
-                    );
+            const refreshToken = localStorage.getItem("refreshToken")
 
-                    const {
-                        accessToken
-                    } = response.data;
+            if (!refreshToken) return false
 
-                    // 갱신된 accessToken을 localStorage에 저장
-                    localStorage.setItem("accessToken", accessToken);
+            try {
+                const response = await axios.post("/api/v1/auth/refresh", {
+                    refreshToken,
+                });
 
-                    // 토큰 갱신 후 재시도
-                    return true;
-                } catch (error) {
-                    console.error("Refresh token failed", error);
-                    return false;
-                }
+                const {
+                    accessToken
+                } = response.data;
+
+                // 갱신된 accessToken을 localStorage에 저장
+                localStorage.setItem("accessToken", accessToken);
+
+                // 토큰 갱신 후 재시도
+                return true;
+            } catch (error) {
+                console.error("Refresh token failed", error);
+                return false;
             }
-            return false;
         },
     },
     mounted() {
         const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) {
             this.$router.push("/login"); // 로그인 페이지로 리디렉션
-        }
-        else {
+        } else {
             // refreshToken이 존재하면 accessToken 갱신 시도
             this.refreshAccessToken().then((success) => {
                 if (!success) {
