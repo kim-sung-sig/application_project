@@ -12,4 +12,5 @@ public class TestController {
     public ResponseEntity<String> test(@RequestParam(value = "val", required = false) String val) {
         return ResponseEntity.ofNullable(val);
     }
+
 }
