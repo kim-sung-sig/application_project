@@ -2,6 +2,16 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Spring Boot-DemoApplication<fileservice>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.fileservice.FileserviceApplication",
+            "projectName": "fileservice",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-DemoApplication<demo>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
