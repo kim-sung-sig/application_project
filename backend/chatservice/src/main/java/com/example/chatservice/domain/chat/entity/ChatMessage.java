@@ -3,28 +3,36 @@ package com.example.chatservice.domain.chat.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
-@Table
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+    indexes = {
+        @Index(name = "idx_chat_message_chatRoomId", columnList = "chatRoomId", unique = true),
+    })
+@Getter @ToString @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class ChatMessage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id; // 메시지 ID
 
     @Column(nullable = false)
@@ -44,7 +52,6 @@ public class ChatMessage {
 
     public static ChatMessage create(UUID chatRoomId, UUID senderId, String content, boolean isSystemMessage) {
         return ChatMessage.builder()
-                .id(UUID.randomUUID())
                 .chatRoomId(chatRoomId)
                 .senderId(senderId)
                 .content(content)

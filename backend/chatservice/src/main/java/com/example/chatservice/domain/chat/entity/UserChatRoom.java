@@ -12,14 +12,16 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"userId", "chatRoomId"}))
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter @ToString @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class UserChatRoom {
 
