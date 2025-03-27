@@ -4,6 +4,26 @@
             "type": "java",
             "name": "Main",
             "request": "launch",
+            "mainClass": "com.example.userservice.userservice.Main",
+            "projectName": "userservice"
+        },
+        {
+            "type": "java",
+            "name": "EurekaserviceApplication",
+            "request": "launch",
+            "mainClass": "com.example.eurekaservice.EurekaserviceApplication",
+            "projectName": "eurekaservice"
+        },
+        {
+            "type": "java",
+            "name": "GatewayApplication",
+            "request": "launch",
+            "mainClass": "com.example.gateway.GatewayApplication"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
             "mainClass": "com.example.fileservice.Main",
             "projectName": "fileservice"
         },
@@ -19,11 +39,11 @@
         },
         {
             "type": "java",
-            "name": "Spring Boot-DemoApplication<demo>",
+            "name": "Spring Boot-UserserviceApplication<userservice>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "mainClass": "com.example.demo.DemoApplication",
-            "projectName": "demo",
+            "mainClass": "com.example.userservice.UserserviceApplication",
+            "projectName": "userservice",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }

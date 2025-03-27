@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -14,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
-    
+
     private final JwtEncoder jwtEncoder;
     private final JwtDecoder jwtDecoder;
 
@@ -22,15 +23,16 @@ public class JwtTokenProvider {
         Instant now = Instant.now();
         Instant expiry = now.plusSeconds(3600); // 1시간 유효
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(
-                org.springframework.security.oauth2.jwt.JwtClaimsSet.builder()
-                        .issuer("chat-app")
-                        .issuedAt(now)
-                        .expiresAt(expiry)
-                        .subject(username)
-                        .claim("roles", roles)
-                        .build()
-        )).getTokenValue();
+        return jwtEncoder.encode(
+                JwtEncoderParameters.from(
+                        JwtClaimsSet.builder()
+                                .issuer("chat-app")
+                                .issuedAt(now)
+                                .expiresAt(expiry)
+                                .subject(username)
+                                .claim("roles", roles)
+                                .build()))
+                .getTokenValue();
     }
 
     public boolean validateToken(String token) {
