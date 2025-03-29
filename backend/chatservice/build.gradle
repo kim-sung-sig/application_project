@@ -89,6 +89,12 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
+	// CODEC BASE62
+	implementation 'org.unbroken-dome.base62:base62:1.1.0'
+
+	// https://mvnrepository.com/artifact/com.github.f4b6a3/uuid-creator
+	implementation 'com.github.f4b6a3:uuid-creator:6.0.0'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

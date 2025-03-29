@@ -3,6 +3,8 @@ package com.example.chatservice.domain.chat.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.UuidGenerator;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +28,8 @@ import lombok.ToString;
 public class ChatRoom {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id; // 채팅방 ID
 
     @Column(nullable = false)

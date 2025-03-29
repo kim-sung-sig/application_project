@@ -34,8 +34,10 @@ public class NickNameHistory extends BaseEntity {
         this.seq++;
     }
 
+    @Override
     @PrePersist
     protected void onPrePersist() {
+        super.onPrePersist();
         if (this.seq == null) {
             this.seq = 1L;
         }

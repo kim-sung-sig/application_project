@@ -1,40 +1,41 @@
 package com.example.userservice.common.util;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 public class CommonUtil {
+
+    public static boolean isEmpty(Object obj) {
+        return ObjectUtils.isEmpty(obj);
+    }
+
+    public static boolean isEmpty(String str) {
+        return !StringUtils.hasText(str);
+    }
+
+    public static boolean hasEmpty(Object... obj) {
+        if (obj == null) {
+            return true;
+        }
+        return Arrays.stream(obj).anyMatch(CommonUtil::isEmpty);
+    }
+
+    public static boolean hasEmpty(String... str) {
+        if (str == null) {
+            return true;
+        }
+        return Arrays.stream(str).anyMatch(CommonUtil::isEmpty);
+    }
 
     public static String getLoginedUserName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) return null;
         return authentication.getName();
-    }
-
-    public static boolean isEmpty(String str) {
-        return Objects.isNull(str) || str.trim().isEmpty();
-    }
-
-    public static boolean isEmpty(String... strs) {
-        for (String str : strs) {
-            if (isEmpty(str)) return true;
-        }
-        return false;
-    }
-
-    public static boolean isEmpty(List<String> strs) {
-        for (String str : strs) {
-            if (isEmpty(str)) return true;
-        }
-        return false;
-    }
-
-    public static boolean isNotEmpty(String str) {
-        return !isEmpty(str);
     }
 
     public static boolean isPasswordValid(String password) {

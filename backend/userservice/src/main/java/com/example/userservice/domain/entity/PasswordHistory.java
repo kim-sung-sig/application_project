@@ -2,11 +2,10 @@ package com.example.userservice.domain.entity;
 
 import java.util.UUID;
 
-import org.hibernate.annotations.UuidGenerator;
+import com.example.userservice.common.util.UUIDv7Generator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.PostPersist;
@@ -39,8 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PasswordHistory extends BaseEntity {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
@@ -49,9 +46,11 @@ public class PasswordHistory extends BaseEntity {
     @Column(name = "password")
     private String password;
 
+    @Override
     @PrePersist
     protected void onPrePersist() {
         super.onPrePersist();
+        if (id == null) id = UUIDv7Generator.generate();
         log.debug("User onPrePersist");
     }
 
@@ -59,6 +58,7 @@ public class PasswordHistory extends BaseEntity {
     protected void onPostPersist() {
     }
 
+    @Override
     @PreUpdate
     protected void onPreUpdate() {
         super.onPreUpdate();

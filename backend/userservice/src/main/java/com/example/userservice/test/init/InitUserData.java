@@ -1,8 +1,11 @@
 package com.example.userservice.test.init;
 
+import java.util.List;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.example.userservice.domain.entity.NickNameHistory;
@@ -28,32 +31,39 @@ public class InitUserData {
     @Bean
     CommandLineRunner init() {
         return (args) -> {
-            log.info("Initializing user data");
+            initUser("admin", "123456");
+            initUser("master", "123456");
 
-            final String username = "admin";
-
-            if (userRepository.existsByUsername(username)) {
-                log.info("User data already exists");
-                return;
+            List<User> users = userRepository.findAll(Sort.by(Sort.Order.asc("id")));
+            for (User user : users) {
+                log.info("User: {}", user);
             }
-
-            NickNameHistory nickNameHistory = new NickNameHistory(username, 1L);
-            nickNameHistoryRepository.save(nickNameHistory);
-
-            User user = User.builder()
-                    .username(username)
-                    .password(passwordEncoder.encode("123456"))
-                    .role(UserRole.ADMIN)
-                    .status(UserStatus.ENABLED)
-                    .name(username)
-                    .nickName(username + nickNameHistory.getSeq())
-                    .email(username + "@example.com")
-                    .phone("01012345678")
-                    .build();
-            userRepository.save(user);
-
-            log.info("User data initialized");
 
         };
     }
+
+    private void initUser(String username, String password) {
+        if (userRepository.existsByUsername(username)) {
+            log.info("User data already exists");
+            return;
+        }
+
+        NickNameHistory nickNameHistory = new NickNameHistory(username, 1L);
+        nickNameHistoryRepository.save(nickNameHistory);
+
+        User user = User.builder()
+                .username(username)
+                .password(passwordEncoder.encode(password))
+                .role(UserRole.ADMIN)
+                .status(UserStatus.ENABLED)
+                .name(username)
+                .nickName(username + nickNameHistory.getSeq())
+                .email(username + "@example.com")
+                .phone("01012345678")
+                .build();
+
+        userRepository.save(user);
+        log.info("User data initialized");
+    }
+
 }

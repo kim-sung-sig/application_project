@@ -3,17 +3,16 @@ package com.example.userservice.domain.entity;
 import java.util.UUID;
 
 import org.hibernate.annotations.Comment;
-import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.userservice.common.enums.IsUsed;
+import com.example.userservice.common.util.UUIDv7Generator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.PostPersist;
@@ -34,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Table(
     name = "dn_user_profile_picture",
     indexes = {
-        @Index(name = "idx_user_profile_picture_user_id", columnList = "userId"),
+        @Index(name = "idx_user_profile_picture_user_id", columnList = "user_id"),
         @Index(name = "idx_user_profile_picture_status", columnList = "status"),})
 @EntityListeners(AuditingEntityListener.class)
 @Getter @ToString(callSuper = true) @EqualsAndHashCode(callSuper = false)
@@ -45,8 +44,6 @@ public class UserProfilePicture extends BaseEntity {
 
     // key
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
@@ -75,16 +72,18 @@ public class UserProfilePicture extends BaseEntity {
     @Column(name = "file_url")
     private String fileUrl;
 
+    @Override
     @PrePersist
     protected void onPrePersist() {
         super.onPrePersist();
-
+        if (id == null) id = UUIDv7Generator.generate();
     }
 
     @PostPersist
     protected void onPostPersist() {
     }
 
+    @Override
     @PreUpdate
     protected void onPreUpdate() {
         super.onPreUpdate();

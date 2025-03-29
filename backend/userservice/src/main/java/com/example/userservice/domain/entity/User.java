@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.Comment;
-import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.userservice.application.components.EventPublisher;
 import com.example.userservice.common.enums.EventType;
+import com.example.userservice.common.util.UUIDv7Generator;
 import com.example.userservice.domain.event.user.UserEvent;
 
 import jakarta.persistence.Column;
@@ -16,7 +16,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.PostPersist;
@@ -52,8 +51,6 @@ public class User extends BaseEntity {
 
     // key
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id;
 
     // security
@@ -148,6 +145,32 @@ public class User extends BaseEntity {
         this.loginFailCount = 0;
     }
 
+    @Override
+    @PrePersist
+    protected void onPrePersist() {
+        super.onPrePersist();
+        if (id == null) id = UUIDv7Generator.generate();
+        log.debug("User onPrePersist");
+    }
+
+    @PostPersist
+    protected void onPostPersist() {
+        log.debug("User onPostPersist");
+        EventPublisher.publish(new UserEvent(EventPublisher.class, this, EventType.CREATED));
+        log.debug("User persist EventPublisher.publish");
+    }
+
+    @Override
+    @PreUpdate
+    protected void onPreUpdate() {
+        super.onPreUpdate();
+    }
+
+    @PostUpdate
+    protected void onPostUpdate() {
+        EventPublisher.publish(new UserEvent(EventPublisher.class, this, EventType.UPDATED));
+    }
+
     public enum UserRole {
         USER("ROLE_USER", "사용자"),
         ADMIN("ROLE_ADMIN", "관리자");
@@ -185,29 +208,6 @@ public class User extends BaseEntity {
         public String getTitle() {
             return title;
         }
-    }
-
-    @PrePersist
-    protected void onPrePersist() {
-        super.onPrePersist();
-        log.debug("User onPrePersist");
-    }
-
-    @PostPersist
-    protected void onPostPersist() {
-        log.debug("User onPostPersist");
-        EventPublisher.publish(new UserEvent(EventPublisher.class, this, EventType.CREATED));
-        log.debug("User persist EventPublisher.publish");
-    }
-
-    @PreUpdate
-    protected void onPreUpdate() {
-        super.onPreUpdate();
-    }
-
-    @PostUpdate
-    protected void onPostUpdate() {
-        EventPublisher.publish(new UserEvent(EventPublisher.class, this, EventType.UPDATED));
     }
 
 }
