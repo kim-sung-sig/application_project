@@ -1,56 +1,61 @@
 package com.example.chatservice.common.properties;
 
-import java.time.Instant;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final JwtEncoder jwtEncoder;
-    private final JwtDecoder jwtDecoder;
+    private static JwtDecoder jwtDecoder;
 
-    public String createToken(String username, List<String> roles) {
-        Instant now = Instant.now();
-        Instant expiry = now.plusSeconds(3600); // 1시간 유효
+    @Value("${jwt.secret-key}")
+    private String originSecretKey;
 
-        return jwtEncoder.encode(
-                JwtEncoderParameters.from(
-                        JwtClaimsSet.builder()
-                                .issuer("chat-app")
-                                .issuedAt(now)
-                                .expiresAt(expiry)
-                                .subject(username)
-                                .claim("roles", roles)
-                                .build()))
-                .getTokenValue();
+    @PostConstruct
+    public void init() {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(
+            originSecretKey.getBytes(StandardCharsets.UTF_8),
+            MacAlgorithm.HS256.name() // "HmacSHA256"
+        );
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKeySpec).build();
+        JwtTokenProvider.jwtDecoder = decoder;
     }
 
-    public boolean validateToken(String token) {
+    public static boolean validateToken(String token) {
         try {
             jwtDecoder.decode(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException e) {
             return false;
         }
     }
 
-    public String getUsername(String token) {
-        Jwt jwt = jwtDecoder.decode(token);
-        return jwt.getSubject();
+    public static UUID getUserId(String token) {
+        return UUID.fromString((String) jwtDecoder.decode(token).getClaim("id"));
     }
 
-    public List<String> getRoles(String token) {
+    public static String getUsername(String token) {
+        return (String) jwtDecoder.decode(token).getClaim("username");
+    }
+
+    public static List<String> getRoles(String token) {
         Jwt jwt = jwtDecoder.decode(token);
         return jwt.getClaim("roles");
     }
+
 }
