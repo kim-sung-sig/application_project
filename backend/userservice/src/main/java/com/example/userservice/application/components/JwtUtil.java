@@ -2,50 +2,43 @@ package com.example.userservice.application.components;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.stereotype.Component;
 
 import com.example.userservice.domain.entity.User.UserRole;
 import com.example.userservice.domain.model.UserForSecurity;
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JwtUtil {
 
-    private static JwtEncoder jwtEncoder;
-    private static JwtDecoder jwtDecoder;
-    public static final String AUTHORIZATION = "Authorization";
-    public static final String BEARER_PREFIX = "Bearer ";
+    private static SecretKey secretKey;
+    private static JwtParser jwtParser;
 
     @Value("${jwt.secret-key}")
     private String originSecretKey;
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String BEARER_PREFIX = "Bearer ";
 
     @PostConstruct
     public void init() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(
-                originSecretKey.getBytes(StandardCharsets.UTF_8),
-                MacAlgorithm.HS256.name() // "HmacSHA256"
-        );
-        NimbusJwtEncoder encoder = new NimbusJwtEncoder(new ImmutableSecret<>(secretKeySpec.getEncoded()));
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKeySpec).build();
-        JwtUtil.jwtEncoder = encoder;
-        JwtUtil.jwtDecoder = decoder;
+        log.debug("JwtUtil init, originSecretKey: {}", originSecretKey);
+        JwtUtil.secretKey = new SecretKeySpec(originSecretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+        JwtUtil.jwtParser = Jwts.parser().verifyWith(secretKey).build();
     }
 
     /**
@@ -53,16 +46,17 @@ public class JwtUtil {
      */
     public static String generateToken(UserForSecurity user, long second) {
         Instant now = Instant.now();
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(second))
-                .subject(user.username())
+        Date nowDate = Date.from(now);
+        Date expirationDate = Date.from(now.plusSeconds(second));
+
+        return Jwts.builder()
                 .claim("id", user.id().toString())
                 .claim("username", user.username())
                 .claim("role", user.role().name())
-                .build();
-
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+                .issuedAt(nowDate)
+                .expiration(expirationDate)
+                .signWith(secretKey)
+                .compact();
     }
 
     /**
@@ -70,13 +64,15 @@ public class JwtUtil {
      */
     public static String generateRefreshToken(long second) {
         Instant now = Instant.now();
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(second))
-                .subject(UUID.randomUUID().toString()) // 랜덤 UUID
-                .build();
+        Date nowDate = Date.from(now);
+        Date expirationDate = Date.from(now.plusSeconds(second));
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        return Jwts.builder()
+                .subject(UUID.randomUUID().toString()) // 랜덤 UUID
+                .issuedAt(nowDate)
+                .expiration(expirationDate)
+                .signWith(secretKey)
+                .compact();
     }
 
     public static Optional<String> getJwtFromRequest(HttpServletRequest request) {
@@ -89,10 +85,10 @@ public class JwtUtil {
      * JWT 검증
      */
     public static boolean validateToken(String token) {
-        try {
-            jwtDecoder.decode(token);
+        try{
+            jwtParser.parseSignedClaims(token);
             return true;
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
@@ -100,16 +96,26 @@ public class JwtUtil {
     /**
      * JWT에서 사용자 정보 추출
      */
-    public static String getUsername(String token) {
-        return (String) jwtDecoder.decode(token).getClaim("username");
+    public static UUID getUserId(String token) {
+        return UUID.fromString(jwtParser
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("id", String.class));
     }
 
-    public static UUID getUserId(String token) {
-        return UUID.fromString((String) jwtDecoder.decode(token).getClaim("id"));
+    public static String getUsername(String token) {
+        return jwtParser
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("username", String.class);
     }
 
     public static UserRole getUserRole(String token) {
-        return UserRole.valueOf((String) jwtDecoder.decode(token).getClaim("role"));
+        return UserRole.valueOf(
+                jwtParser
+                        .parseSignedClaims(token)
+                        .getPayload()
+                        .get("role", String.class));
     }
     
     public static JwtUserInfo getUserInfo(String token) {

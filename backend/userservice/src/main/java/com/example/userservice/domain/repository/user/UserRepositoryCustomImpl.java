@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.userservice.domain.entity.QUser;
 import com.example.userservice.domain.entity.User.UserStatus;
@@ -19,6 +20,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<UserForSecurity> findByUsernameForSecurity(String username) {
         QUser user = QUser.user;

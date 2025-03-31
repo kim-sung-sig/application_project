@@ -34,7 +34,9 @@ public class AuthController {
     // 토큰 발급 with (username, password)
     @PostMapping("/login")
     public ResponseEntity<JwtTokenResponse> login(@RequestBody UserLoginRequest loginRequest) {
+        log.debug("login request : {}", loginRequest);
         JwtTokenResponse response = authService.createTokenByUsernameAndPassword(loginRequest);
+        log.debug("login response : {}", response);
         return ResponseEntity.ok(response);
     }
 

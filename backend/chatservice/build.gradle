@@ -95,6 +95,11 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.github.f4b6a3/uuid-creator
 	implementation 'com.github.f4b6a3:uuid-creator:6.0.0'
 
+	// jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

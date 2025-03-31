@@ -8,6 +8,10 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -31,8 +35,7 @@ public class SecurityConfig {
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
     private final CustomLoginFailureHandler customLoginFailureHandler;
 
-    private static final String LOGIN_PAGE = "/login";
-    private static final String LOGOUT_PAGE = "/logout";
+    private static final String LOGIN_PAGE = "/api/v1/auth/login";
     private static final String USERNAME_PARAMETER = "username";
     private static final String PASSWORD_PARAMETER = "password";
 
@@ -54,58 +57,18 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
+        return http
+            .csrf(CsrfConfigurer::disable)
+            .httpBasic(HttpBasicConfigurer::disable)
+            .formLogin(FormLoginConfigurer::disable)
+            .oauth2Login(OAuth2LoginConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/token/refresh").permitAll()
+                .requestMatchers(LOGIN_PAGE, "/api/v1/auth/token/refresh").permitAll()
                 .anyRequest().authenticated()
-            );
-        /*
-        http.csrf((csrf) -> csrf.disable());
-        http.httpBasic((basic) -> basic.disable());
-        http.oauth2Login((oauth) -> oauth.disable()); // 일단 막자
-
-        http.formLogin((form) -> {
-            form
-                .loginPage(LOGIN_PAGE).permitAll()
-                .usernameParameter(USERNAME_PARAMETER)
-                .passwordParameter(PASSWORD_PARAMETER)
-                .successHandler(customLoginSuccessHandler)
-                .failureHandler(customLoginFailureHandler);
-        });
-        http.logout((logout) -> {
-            logout
-                .logoutUrl(LOGOUT_PAGE).permitAll()
-                .invalidateHttpSession(true);
-        });
-
-        http.authorizeHttpRequests((authorize) -> {
-            authorize
-                .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
-                // user
-                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll() // 회원가입
-                .requestMatchers(HttpMethod.GET, "/api/v1/users/check/**").permitAll() // 중복확인
-                .requestMatchers(HttpMethod.GET, "/api/user/status").permitAll() // 로그인 상태 확인
-
-                // swagger
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasRole(UserRole.ADMIN.name())
-
-                .anyRequest().authenticated();
-        });
-
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        http.sessionManagement((session) -> {
-            session
-                .invalidSessionUrl(LOGIN_PAGE)
-                .sessionAuthenticationErrorUrl(LOGIN_PAGE)
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .sessionFixation().newSession()
-                .maximumSessions(1)
-                .expiredUrl(LOGIN_PAGE);
-        });
-        */
-        return http.build();
+            )
+            .build();
     }
 
     @Bean

@@ -1,61 +1,69 @@
 package com.example.chatservice.common.properties;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
-@RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private static JwtDecoder jwtDecoder;
+    private static SecretKey secretKey;
+    private static JwtParser jwtParser;
 
     @Value("${jwt.secret-key}")
     private String originSecretKey;
 
     @PostConstruct
     public void init() {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(
-            originSecretKey.getBytes(StandardCharsets.UTF_8),
-            MacAlgorithm.HS256.name() // "HmacSHA256"
-        );
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(secretKeySpec).build();
-        JwtTokenProvider.jwtDecoder = decoder;
+        log.debug("JwtTokenProvider init, originSecretKey: {}", originSecretKey);
+        JwtTokenProvider.secretKey = new SecretKeySpec(originSecretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+        JwtTokenProvider.jwtParser = Jwts.parser().verifyWith(secretKey).build();
     }
 
     public static boolean validateToken(String token) {
-        try {
-            jwtDecoder.decode(token);
+        try{
+            jwtParser.parseSignedClaims(token);
             return true;
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
     public static UUID getUserId(String token) {
-        return UUID.fromString((String) jwtDecoder.decode(token).getClaim("id"));
+        return UUID.fromString(jwtParser
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("id", String.class));
     }
 
     public static String getUsername(String token) {
-        return (String) jwtDecoder.decode(token).getClaim("username");
+        return jwtParser
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("username", String.class);
     }
 
     public static List<String> getRoles(String token) {
-        Jwt jwt = jwtDecoder.decode(token);
-        return jwt.getClaim("roles");
+        String role = jwtParser
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
+
+        return Collections.singletonList(role);
     }
 
 }

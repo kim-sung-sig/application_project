@@ -15,7 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.userservice.common.constants.ConstantsUtil;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -25,6 +27,7 @@ public class GlobalExceptionHandler {
     // 전역 예외
     @ExceptionHandler(exception = {Exception.class})
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {
+        log.error("시스템 오류 발생", e);
         Map<String, Object> body = Map.of(
             ConstantsUtil.RETURN_MESSAGE, "시스템 오류가 발생했습니다."
         );
