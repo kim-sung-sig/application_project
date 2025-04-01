@@ -1,13 +1,8 @@
 package com.example.userservice.common.config.securiry.handler;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -17,12 +12,10 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.userservice.common.config.securiry.dto.CustomUserDetails;
 import com.example.userservice.domain.entity.User;
 import com.example.userservice.domain.exception.UserNotFoundException;
 import com.example.userservice.domain.model.UserForSecurity;
 import com.example.userservice.domain.repository.user.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,6 +34,7 @@ public class CustomLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Override
     @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        /*
         log.info("로그인 성공" + authentication.getPrincipal());
 
         // 기존 세션 강제 종료
@@ -71,6 +65,7 @@ public class CustomLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             writer.write(jsonResponse);
             writer.flush();
         }
+         */
     }
 
     private String getReturnUrl(HttpServletRequest request, HttpServletResponse response) {

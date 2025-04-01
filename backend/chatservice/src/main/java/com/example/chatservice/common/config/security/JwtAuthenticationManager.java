@@ -17,7 +17,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
 
-
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         String token = authentication.getPrincipal().toString();

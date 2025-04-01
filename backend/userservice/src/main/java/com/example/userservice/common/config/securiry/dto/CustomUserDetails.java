@@ -1,42 +1,37 @@
 package com.example.userservice.common.config.securiry.dto;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.example.userservice.domain.entity.User.UserStatus;
-import com.example.userservice.domain.model.UserForSecurity;
-
-import lombok.Getter;
-
-@Getter
-public class CustomUserDetails implements UserDetails{
-
-    private static final long serialVersionUID = 1L;
-
-    private UserForSecurity user;
-
-    public CustomUserDetails(UserForSecurity user){
-        this.user = user;
-    }
+public record CustomUserDetails(
+    UUID id,
+    String username,
+    List<String> roles
+) implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.username();
+        return username;
     }
 
     @Override
     public String getPassword() {
-        return user.password();
+        return "";
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(user.role().getKey()));
+        return roles.stream().map(role -> new SimpleGrantedAuthority(role)).toList();
+    }
+    
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
     @Override
@@ -45,20 +40,12 @@ public class CustomUserDetails implements UserDetails{
     }
 
     @Override
-    public boolean isEnabled() {
-        UserStatus status = user.status();
-        if (Objects.equals(status, UserStatus.LOCKED)) return false;
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

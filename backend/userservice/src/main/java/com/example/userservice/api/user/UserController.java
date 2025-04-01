@@ -31,16 +31,14 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Void> getUserList(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Void> getUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable(name = "id") Long targetUserId
-    ) {
+            @PathVariable(name = "id") Long targetUserId) {
         log.info("사용자 정보 조회 요청");
         return ResponseEntity.ok().build();
     }
@@ -48,8 +46,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Void> createUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody CreateUserCommand command
-    ) {
+            @RequestBody CreateUserCommand command) {
         userService.createUser(command);
         return ResponseEntity.ok().build();
     }
@@ -58,17 +55,15 @@ public class UserController {
     public ResponseEntity<Void> updateUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "id") UUID targetUserId,
-            @RequestBody UpdateUserCommand command
-    ) {
-        userService.updateUser(userDetails.getUser().id(), targetUserId, command);
+            @RequestBody UpdateUserCommand command) {
+        userService.updateUser(userDetails.id(), targetUserId, command);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable(name = "id") Long targetUserId
-    ) {
+            @PathVariable(name = "id") Long targetUserId) {
         return ResponseEntity.ok().build();
     }
 

@@ -1,4 +1,4 @@
-package com.example.userservice.application.components;
+package com.example.userservice.common.util;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;

@@ -13,9 +13,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.userservice.api.auth.request.UserLoginRequest;
-import com.example.userservice.application.components.JwtUtil;
 import com.example.userservice.application.components.RefreshTokenComponent;
 import com.example.userservice.common.constants.ConstantsUtil;
+import com.example.userservice.common.util.JwtUtil;
 import com.example.userservice.domain.entity.User.UserStatus;
 import com.example.userservice.domain.model.UserForSecurity;
 import com.example.userservice.domain.repository.history.PasswordHistoryRepository;
