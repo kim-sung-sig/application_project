@@ -30,8 +30,9 @@ public class NickNameHistory extends BaseEntity {
     @Column(name = "seq")
     private Long seq;
 
-    public void increaseSeq() {
+    public long incrementSeqAndGet() {
         this.seq++;
+        return this.seq;
     }
 
     @Override

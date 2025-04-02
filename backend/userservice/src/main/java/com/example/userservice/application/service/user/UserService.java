@@ -74,7 +74,7 @@ public class UserService {
         User newUser = User.builder()
                 .username(username)
                 .password(encodedPassword)
-                .role(UserRole.USER)
+                .role(UserRole.ROLE_USER)
                 .status(UserStatus.ENABLED)
                 .name(name)
                 .nickName(nickName + nickSeq)
@@ -189,9 +189,9 @@ public class UserService {
         return nickNameHistoryRepository.findById(nickName)
                 .map(exist -> {
                     // 존재하면 +1 한 후 반환
-                    exist.increaseSeq();
+                    long newSeq = exist.incrementSeqAndGet();
                     nickNameHistoryRepository.save(exist); // nickSeq 업데이트
-                    return exist.getSeq();
+                    return newSeq;
                 })
                 .orElseGet(() -> {
                     // 존재하지 않으면 새로 저장하고 1을 반환

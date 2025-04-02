@@ -57,12 +57,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user = userOptional.get();
             user.changeNickName(oauth2Response.getName());
             user.changeEmail(oauth2Response.getEmail());
-        } else {
+        }
+        else {
             user = User.builder()
                     .username(username)
                     .password(null)
                     .nickName(username)
-                    .role(UserRole.USER)
+                    .email(oauth2Response.getEmail())
+                    .role(UserRole.ROLE_USER)
                     .build();
         }
 

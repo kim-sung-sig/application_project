@@ -1,4 +1,4 @@
-package com.example.userservice.application.components;
+package com.example.userservice.application.auth.components;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RefreshTokenComponent {
+public class RefreshTokenRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String REFRESH_TOKEN_PREFIX = "refresh:"; // key : refreshToken (String), value : userId (UUID)

@@ -1,11 +1,22 @@
 package com.example.userservice.domain.repository.history;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.userservice.domain.entity.NickNameHistory;
 
+import jakarta.persistence.LockModeType;
+
 @Repository
 public interface NickNameHistoryRepository extends JpaRepository<NickNameHistory, String> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT n FROM NickNameHistory n WHERE n.nickName = :nickName")
+    Optional<NickNameHistory> findByNickNameForUpdate(@Param("nickName") String nickName);
 
 }

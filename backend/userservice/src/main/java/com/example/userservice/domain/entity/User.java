@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.example.userservice.application.components.EventPublisher;
 import com.example.userservice.common.enums.EventType;
+import com.example.userservice.common.util.EventPublisher;
 import com.example.userservice.common.util.UUIDv7Generator;
 import com.example.userservice.domain.event.user.UserEvent;
 
@@ -132,6 +132,10 @@ public class User extends BaseEntity {
         this.loginFailCount++;
     }
 
+    public void changeRole(UserRole role) {
+        this.role = role;
+    }
+
     public void userDelete() {
         this.status = UserStatus.DELETED;
     }
@@ -172,8 +176,8 @@ public class User extends BaseEntity {
     }
 
     public enum UserRole {
-        USER("ROLE_USER", "사용자"),
-        ADMIN("ROLE_ADMIN", "관리자");
+        ROLE_USER("ROLE_USER", "사용자"),
+        ROLE_ADMIN("ROLE_ADMIN", "관리자");
 
         private final String key;
         private final String title;

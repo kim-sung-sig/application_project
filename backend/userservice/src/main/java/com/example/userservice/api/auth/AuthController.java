@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.example.userservice.api.auth.request.OAuthRequest;
 import com.example.userservice.api.auth.request.UserLoginRequest;
 import com.example.userservice.api.user.request.CreateUserCommand;
-import com.example.userservice.application.service.auth.AuthService;
-import com.example.userservice.application.service.auth.JwtTokenResponse;
+import com.example.userservice.application.auth.AuthService;
+import com.example.userservice.application.auth.response.JwtTokenResponse;
 import com.example.userservice.common.constants.ConstantsUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,14 @@ public class AuthController {
         log.debug("login request : {}", loginRequest);
         JwtTokenResponse response = authService.createTokenByUsernameAndPassword(loginRequest);
         log.debug("login response : {}", response);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/oauth/login")
+    public ResponseEntity<JwtTokenResponse> oauthLogin(@RequestBody OAuthRequest oauthRequest) {
+        log.debug("oauth login request : {}", oauthRequest);
+        JwtTokenResponse response = authService.createTokenByOAuth(oauthRequest);
+        log.debug("oauth login response : {}", response);
         return ResponseEntity.ok(response);
     }
 

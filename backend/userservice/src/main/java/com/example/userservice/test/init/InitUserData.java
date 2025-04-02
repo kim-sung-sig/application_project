@@ -23,10 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class InitUserData {
 
-    private final BCryptPasswordEncoder passwordEncoder;
-
     private final UserRepository userRepository;
     private final NickNameHistoryRepository nickNameHistoryRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Bean
     CommandLineRunner init() {
@@ -43,27 +42,30 @@ public class InitUserData {
     }
 
     private void initUser(String username, String password) {
-        if (userRepository.existsByUsername(username)) {
-            log.info("User data already exists");
-            return;
-        }
+        userRepository.findByUsername(username)
+                .ifPresentOrElse(user -> {
+                    log.info("User data already exists");
+                    user.changeRole(UserRole.ROLE_USER);
+                    userRepository.save(user);
+                }, () -> {
+                    NickNameHistory nickNameHistory = new NickNameHistory(username, 1L);
+                    nickNameHistoryRepository.save(nickNameHistory);
 
-        NickNameHistory nickNameHistory = new NickNameHistory(username, 1L);
-        nickNameHistoryRepository.save(nickNameHistory);
+                    User user = User.builder()
+                            .username(username)
+                            .password(passwordEncoder.encode(password))
+                            .role(UserRole.ROLE_USER)
+                            .status(UserStatus.ENABLED)
+                            .name(username)
+                            .nickName(username + nickNameHistory.getSeq())
+                            .email(username + "@example.com")
+                            .phone("01012345678")
+                            .build();
 
-        User user = User.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .role(UserRole.ADMIN)
-                .status(UserStatus.ENABLED)
-                .name(username)
-                .nickName(username + nickNameHistory.getSeq())
-                .email(username + "@example.com")
-                .phone("01012345678")
-                .build();
+                    userRepository.save(user);
+                    log.info("User data initialized");
+                });
 
-        userRepository.save(user);
-        log.info("User data initialized");
     }
 
 }
