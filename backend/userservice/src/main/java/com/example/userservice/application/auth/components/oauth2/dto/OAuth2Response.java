@@ -1,4 +1,4 @@
-package com.example.userservice.common.config.securiry.oauth2.dto;
+package com.example.userservice.application.auth.components.oauth2.dto;
 
 public interface OAuth2Response {
 
@@ -9,5 +9,7 @@ public interface OAuth2Response {
     String getEmail(); //이메일
 
     String getName(); //사용자 실명 (설정한 이름)
+
+    String getNickName(); //사용자 닉네임
 
 }

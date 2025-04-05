@@ -1,8 +1,11 @@
-package com.example.userservice.common.config.securiry.oauth2.dto;
+package com.example.userservice.application.auth.components.oauth2.dto;
 
 import java.util.Map;
 
-public class NaverResponse implements OAuth2Response{
+import lombok.ToString;
+
+@ToString
+public class NaverResponse implements OAuth2Response {
 
     private final Map<String, Object> attribute;
 
@@ -28,5 +31,10 @@ public class NaverResponse implements OAuth2Response{
     @Override
     public String getName() {
         return attribute.get("name").toString();
+    }
+
+    @Override
+    public String getNickName() {
+        return attribute.get("nickname").toString();
     }
 }

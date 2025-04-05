@@ -43,6 +43,7 @@
 
       <button id="login-btn" class="uk-button" type="submit">Login</button>
     </form>
+
     <div id="find-wrap">
       <ul>
         <li><a>비밀번호 찾기</a></li>
@@ -51,6 +52,52 @@
           <router-link to="/auth/signup" class="uk-link-text">회원가입</router-link>
         </li>
       </ul>
+    </div>
+
+    <div id="social-login" style="display: flex; gap: 20px; align-items: center">
+      <!-- 네이버 로그인 버튼 -->
+      <button
+        id="naver-login"
+        @click="handleNaverLogin"
+        style="
+          background-color: #03c75a;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          padding: 10px 20px;
+          font-size: 16px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+        "
+      >
+        <img src="" alt="N" style="width: 24px; height: 24px; margin-right: 10px" />
+        네이버 로그인
+      </button>
+
+      <!-- 카카오 로그인 버튼 -->
+      <button
+        id="kakao-login"
+        @click="handleKakaoLogin"
+        style="
+          background-color: #fee500;
+          color: #000000;
+          border: none;
+          border-radius: 12px;
+          padding: 10px 20px;
+          font-size: 16px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+        "
+      >
+        <img
+          src="https://cdn.simpleicons.org/kakaotalk/FFCD00"
+          alt="Kakao"
+          style="width: 24px; height: 24px; margin-right: 10px"
+        />
+        카카오 로그인
+      </button>
     </div>
   </div>
 </template>
@@ -66,13 +113,13 @@ export default {
 
   data() {
     return {
-      username: "asfasf",
+      username: "",
       usernameError: "",
 
       password: "",
       passwordError: "",
 
-      checker: "asfasf",
+      checker: "",
       checkerNum: "",
       checkerError: "",
 
@@ -104,6 +151,7 @@ export default {
         }
       }
     },
+
     // refreshToken으로 accessToken을 갱신하는 메서드
     async refreshAccessToken() {
       const refreshToken = localStorage.getItem("refreshToken");
@@ -111,14 +159,18 @@ export default {
       if (!refreshToken) return false;
 
       try {
-        const response = await axios.post("/api/v1/auth/refresh", {
-          refreshToken,
-        });
+        const response = await axios.post(
+          "http://localhost:18081/api/v1/auth/token/refresh",
+          {
+            refreshToken,
+          }
+        );
 
-        const { accessToken } = response.data;
+        const { accessToken, refreshToken } = response.data;
 
         // 갱신된 accessToken을 localStorage에 저장
         localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
 
         // 토큰 갱신 후 재시도
         return true;
@@ -127,16 +179,31 @@ export default {
         return false;
       }
     },
+
+    handleNaverLogin() {
+      const clientId = "G012m6B6UnjMyJQjyeYv";
+      const redirectUri = `${window.location.origin}/login/oauth2/code/naver`;
+      const state = crypto.randomUUID();
+      window.location.href = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
+    },
+
+    handleKakaoLogin() {
+      const clientId = "YOUR_CLIENT_ID";
+      const redirectUri = `${window.location.origin}/auth/oauth/kakao/callback`;
+      window.location.href = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=STATE`;
+    },
   },
   mounted() {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) {
-      this.$router.push("/auth/signin"); // 로그인 페이지로 리디렉션
+      // this.$router.push("/auth/signin"); // 로그인 페이지로 리디렉션
     } else {
       // refreshToken이 존재하면 accessToken 갱신 시도
       this.refreshAccessToken().then((success) => {
         if (!success) {
-          this.$router.push("/login");
+          this.$router.push("/auth/signin");
+        } else {
+          this.$router.push("/");
         }
       });
     }

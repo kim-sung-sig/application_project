@@ -13,19 +13,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.userservice.api.auth.request.OAuthRequest;
 import com.example.userservice.api.auth.request.UserLoginRequest;
-import com.example.userservice.application.auth.components.OAuth2TokenValidator;
 import com.example.userservice.application.auth.components.RefreshTokenRepository;
+import com.example.userservice.application.auth.components.oauth2.OAuth2TokenValidator;
+import com.example.userservice.application.auth.components.oauth2.dto.OAuth2Response;
 import com.example.userservice.application.auth.response.JwtTokenResponse;
-import com.example.userservice.common.config.securiry.oauth2.dto.OAuth2Response;
+import com.example.userservice.application.components.nickname.NickNameComponent;
 import com.example.userservice.common.constants.ConstantsUtil;
 import com.example.userservice.common.util.CommonUtil;
 import com.example.userservice.common.util.JwtUtil;
-import com.example.userservice.domain.entity.NickNameHistory;
 import com.example.userservice.domain.entity.User;
 import com.example.userservice.domain.entity.User.UserRole;
 import com.example.userservice.domain.entity.User.UserStatus;
 import com.example.userservice.domain.model.UserForSecurity;
-import com.example.userservice.domain.repository.history.NickNameHistoryRepository;
 import com.example.userservice.domain.repository.user.UserRepository;
 import com.google.common.base.Objects;
 
@@ -40,16 +39,13 @@ public class AuthService {
     // repository
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final NickNameHistoryRepository nickNameHistoryRepository;
-    // private final PasswordHistoryRepository passwordHistoryRepository;
 
     // component
+    private final NickNameComponent nickNameComponent;
     private final OAuth2TokenValidator oauth2TokenValidator;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * 토큰 발급 (username, password)
-     * 
+    /** 토큰 발급 (username, password)
      * @param loginRequest
      * @return
      */
@@ -76,22 +72,16 @@ public class AuthService {
         return createToken(user);
     }
 
-    /**
-     * 소셜 로그인 토큰 발급 (provider, accessToken)
-     * 
+    /** 소셜 로그인 토큰 발급 (provider, accessToken)
      * @param oauthRequest
      * @return
      */
     @Transactional
     public JwtTokenResponse createTokenByOAuth(OAuthRequest oauthRequest) {
-        if (CommonUtil.isEmpty(oauthRequest))
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid access token");
-
         log.info("createTokenByOAuth({}) 호출", oauthRequest);
-        String provider = oauthRequest.provider();
-        String accessToken = oauthRequest.accessToken();
 
-        OAuth2Response oauth2Response = oauth2TokenValidator.getUserInfo(provider, accessToken);
+        OAuth2Response oauth2Response = oauth2TokenValidator.getUserInfo(oauthRequest);
+
         if (CommonUtil.isEmpty(oauth2Response))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid access token");
         log.debug("oauth response : {}", oauth2Response);
@@ -103,9 +93,7 @@ public class AuthService {
         return createToken(user);
     }
 
-    /**
-     * 토큰 발급 (refreshToken)
-     * 
+    /** 토큰 발급 (refreshToken)
      * @param refreshToken
      * @return
      */
@@ -173,66 +161,42 @@ public class AuthService {
 
         if (userOptional.isPresent()) {
             user = userOptional.get();
-            user.changeNickName(oauth2Response.getName());
+            if (!Objects.equal(user.getNickName(), oauth2Response.getNickName())) {
+                String nickName = oauth2Response.getNickName();
+                String uniqueNickName = nickNameComponent.generateUniqueNickName(nickName);
+                user.changeNickName(uniqueNickName);
+            }
             user.changeEmail(oauth2Response.getEmail());
 
         } else {
-            String nickName = oauth2Response.getName();
-            NickNameHistory nickNameHistory = nickNameHistoryRepository.findByNickNameForUpdate(nickName)
-                    .orElseGet(() -> {
-                        NickNameHistory newHistory = new NickNameHistory(nickName, 0L);
-                        return nickNameHistoryRepository.save(newHistory);
-                    });
-
-            long newSeq = nickNameHistory.incrementSeqAndGet(); // 시퀀스 증가
-            nickNameHistoryRepository.save(nickNameHistory);
+            String nickName = oauth2Response.getNickName();
+            String uniqueNickName = nickNameComponent.generateUniqueNickName(nickName);
 
             user = User.builder()
                     .username(username)
                     .password(null)
-                    .nickName(username + newSeq)
+                    .name(oauth2Response.getName())
+                    .nickName(uniqueNickName)
                     .email(oauth2Response.getEmail())
                     .role(UserRole.ROLE_USER)
+                    .status(UserStatus.ENABLED)
                     .build();
+
         }
 
         User saveUser = userRepository.save(user);
 
-        return userRepository.findByUserIdForSecurity(saveUser.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User not found"));
-    }
+        return new UserForSecurity(
+            saveUser.getId(),
+            saveUser.getUsername(),
+            saveUser.getPassword(),
+            saveUser.getRole(),
+            saveUser.getStatus(),
+            saveUser.getLoginFailCount(),
 
-    // 아이디 찾기
-    @Transactional(readOnly = true)
-    public String findUsername(String email) {
-        return null;
-    }
-
-    /**
-     * 임시 비밀번호 발급하기
-     * 
-     * @param token
-     * @param inputPassword
-     */
-    @Transactional
-    public void issueTemporaryPassword(String username, String email) {
-        // 1. 이메일로 사용자 찾기
-        // 2. 임시 비밀번호 생성
-        // 3. 임시 비밀번호 암호화
-        // 4. 임시 비밀번호 저장
-        // 5. 이메일로 임시 비밀번호 전송
-    }
-
-    // 임시 비밀번호 확인하기
-    @Transactional
-    public boolean verifyTemporaryPassword(String token) {
-        return false;
-    }
-
-    // 임시 비밀번호 확인후 비밀번호 변경하기
-    @Transactional
-    public void changePasswordAfterVerification(String token, String newPassword) {
-
+            saveUser.getLastLoginAt(),
+            saveUser.getCreatedAt()
+        );
     }
 
 }

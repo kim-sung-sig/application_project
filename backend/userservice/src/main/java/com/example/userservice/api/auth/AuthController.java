@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.userservice.api.auth.request.OAuthRequest;
+import com.example.userservice.api.auth.request.TokenRefresh;
 import com.example.userservice.api.auth.request.UserLoginRequest;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.application.auth.AuthService;
@@ -51,8 +52,8 @@ public class AuthController {
 
     // 토큰 발급 with (refresh token)
     @PostMapping("/token/refresh")
-    public ResponseEntity<JwtTokenResponse> refreshToken(@RequestBody String refreshToken) {
-        JwtTokenResponse response = authService.createTokenByRefreshToken(refreshToken);
+    public ResponseEntity<JwtTokenResponse> refreshToken(@RequestBody TokenRefresh refreshToken) {
+        JwtTokenResponse response = authService.createTokenByRefreshToken(refreshToken.refreshToken());
         return ResponseEntity.ok(response);
     }
 
