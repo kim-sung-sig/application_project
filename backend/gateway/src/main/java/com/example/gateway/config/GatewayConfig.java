@@ -27,13 +27,13 @@ public class GatewayConfig {
 
                 // Route all user service related requests to USERSERVICE
                 .route("USERSERVICE", r -> r
-                        .path("/api/v1/user/**")
+                        .path("/api/v1/user/**", "/api/v1/auth/**")
                         .uri("lb://USERSERVICE"))
 
                 // Route all chat service related requests to CHATSERVICE
                 .route("CHATSERVICE", r -> r
                         .path("/api/v1/chat/**")
-                        .uri("lb://USERSERVICE"))
+                        .uri("lb://CHATSERVICE"))
 
                 // Default route that returns a 404 status
                 .route("DEFAULT_ROUTE", r -> r

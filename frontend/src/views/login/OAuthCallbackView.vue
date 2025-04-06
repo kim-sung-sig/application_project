@@ -9,13 +9,15 @@ import axios from "axios";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const route = useRoute();
 const router = useRouter();
 
 onMounted(async () => {
-  const code = route.query.code;
-  const state = route.query.state;
   const provider = route.params.provider;
+  const code = route.query.code;
+  const state = route.query.state ?? crypto.randomUUID();
+  const redirectUri = `${window.location.origin}/login/oauth2/code/${provider}`;
 
   if (!code || !provider) {
     alert("OAuth 인가에 필요한 정보가 없습니다.");
@@ -24,10 +26,11 @@ onMounted(async () => {
 
   try {
     // 토큰 발급 요청
-    const response = await axios.post("http://localhost:18081/api/v1/auth/oauth/login", {
+    const response = await axios.post(`${apiBaseUrl}/api/v1/auth/oauth/login`, {
       provider: provider,
       code: code,
       state: state,
+      redirectUri: redirectUri,
     });
 
     // 토큰 정보 추출

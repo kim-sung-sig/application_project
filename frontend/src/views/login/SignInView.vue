@@ -106,6 +106,8 @@
 import TextInput from "@/components/input/TextInput.vue";
 import axios from "axios";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 export default {
   components: {
     TextInput,
@@ -131,7 +133,7 @@ export default {
   methods: {
     async handleLogin() {
       try {
-        const response = await axios.post("/api/v1/auth/token", {
+        const response = await axios.post(`${apiBaseUrl}/api/v1/auth/token`, {
           username: this.username,
           password: this.password,
         });
@@ -159,12 +161,9 @@ export default {
       if (!refreshToken) return false;
 
       try {
-        const response = await axios.post(
-          "http://localhost:18081/api/v1/auth/token/refresh",
-          {
-            refreshToken,
-          }
-        );
+        const response = await axios.post(`${apiBaseUrl}/api/v1/auth/token/refresh`, {
+          refreshToken,
+        });
 
         const { accessToken, refreshToken } = response.data;
 
@@ -188,9 +187,10 @@ export default {
     },
 
     handleKakaoLogin() {
-      const clientId = "YOUR_CLIENT_ID";
-      const redirectUri = `${window.location.origin}/auth/oauth/kakao/callback`;
-      window.location.href = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=STATE`;
+      const clientId = "3df24cab62d018e352caeb9654d23112";
+      const redirectUri = `${window.location.origin}/login/oauth2/code/kakao`;
+      const state = crypto.randomUUID();
+      window.location.href = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
     },
   },
   mounted() {

@@ -1,15 +1,13 @@
 package com.example.userservice.api.auth.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.validation.constraints.NotBlank;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record OAuthRequest(
-    @NotBlank
-    String provider,
-
-    @NotBlank
-    String code,
-
-    @NotBlank
-    String state        // 네이버는 필수, 카카오는 선택
-
+    @NotBlank String provider,
+    @NotBlank String code,
+    String state,
+    String redirectUri
 ) {}

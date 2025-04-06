@@ -21,6 +21,7 @@ import com.example.userservice.application.auth.AuthService;
 import com.example.userservice.application.auth.response.JwtTokenResponse;
 import com.example.userservice.common.constants.ConstantsUtil;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +36,7 @@ public class AuthController {
 
     // 토큰 발급 with (username, password)
     @PostMapping("/login")
-    public ResponseEntity<JwtTokenResponse> login(@RequestBody UserLoginRequest loginRequest) {
+    public ResponseEntity<JwtTokenResponse> login(@Valid @RequestBody UserLoginRequest loginRequest) {
         log.debug("login request : {}", loginRequest);
         JwtTokenResponse response = authService.createTokenByUsernameAndPassword(loginRequest);
         log.debug("login response : {}", response);
@@ -43,7 +44,7 @@ public class AuthController {
     }
 
     @PostMapping("/oauth/login")
-    public ResponseEntity<JwtTokenResponse> oauthLogin(@RequestBody OAuthRequest oauthRequest) {
+    public ResponseEntity<JwtTokenResponse> oauthLogin(@Valid @RequestBody OAuthRequest oauthRequest) {
         log.debug("oauth login request : {}", oauthRequest);
         JwtTokenResponse response = authService.createTokenByOAuth(oauthRequest);
         log.debug("oauth login response : {}", response);
@@ -52,7 +53,7 @@ public class AuthController {
 
     // 토큰 발급 with (refresh token)
     @PostMapping("/token/refresh")
-    public ResponseEntity<JwtTokenResponse> refreshToken(@RequestBody TokenRefresh refreshToken) {
+    public ResponseEntity<JwtTokenResponse> refreshToken(@Valid @RequestBody TokenRefresh refreshToken) {
         JwtTokenResponse response = authService.createTokenByRefreshToken(refreshToken.refreshToken());
         return ResponseEntity.ok(response);
     }

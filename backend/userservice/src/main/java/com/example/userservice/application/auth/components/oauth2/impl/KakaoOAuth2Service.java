@@ -1,5 +1,6 @@
 package com.example.userservice.application.auth.components.oauth2.impl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,31 +15,29 @@ import org.springframework.web.client.RestClient;
 
 import com.example.userservice.api.auth.request.OAuthRequest;
 import com.example.userservice.application.auth.components.oauth2.OAuth2Service;
-import com.example.userservice.application.auth.components.oauth2.dto.NaverResponse;
+import com.example.userservice.application.auth.components.oauth2.dto.KakaoResponse;
 import com.example.userservice.application.auth.components.oauth2.dto.OAuth2Response;
 import com.example.userservice.common.util.JwtUtil;
 
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class NaverOAuth2Service implements OAuth2Service {
+public class KakaoOAuth2Service implements OAuth2Service {
 
     private final RestClient restClient = RestClient.create();
 
-    @Value("${oauth.naver.client-id}")
-    private String naverClientId;
+    @Value("${oauth.kakao.client-id}")
+    private String kakaoClientId;
 
-    @Value("${oauth.naver.client-secret}")
-    private String naverClientSecret;
+    @Value("${oauth.kakao.client-secret}")
+    private String kakaoClientSecret;
 
     @PostConstruct
     public void init() {
-        log.debug("naverClientId: " + naverClientId);
-        log.debug("naverClientSecret: " + naverClientSecret);
+        log.debug("kakaoClientId: " + kakaoClientId);
+        log.debug("kakaoClientSecret: " + kakaoClientSecret);
     }
 
     @Override
@@ -51,14 +50,14 @@ public class NaverOAuth2Service implements OAuth2Service {
     public String getAccessToken(OAuthRequest oauthRequest) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
-        params.add("client_id", naverClientId);
-        params.add("client_secret", naverClientSecret);
+        params.add("client_id", kakaoClientId);
+        params.add("client_secret", kakaoClientSecret);
         params.add("code", oauthRequest.code());
         params.add("state", oauthRequest.state());
 
         ResponseEntity<Map<String, Object>> response = restClient.post()
-                .uri("https://nid.naver.com/oauth2.0/token")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .uri("https://kauth.kakao.com/oauth/token")
+                .header(HttpHeaders.CONTENT_TYPE, new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8).toString())
                 .body(params)
                 .retrieve()
                 .toEntity(new ParameterizedTypeReference<>() {});
@@ -78,8 +77,9 @@ public class NaverOAuth2Service implements OAuth2Service {
     @Override
     public OAuth2Response getUserInfo(String accessToken) {
         ResponseEntity<Map<String, Object>> response = restClient.get()
-                .uri("https://openapi.naver.com/v1/nid/me")
+                .uri("https://kapi.kakao.com/v2/user/me")
                 .header(HttpHeaders.AUTHORIZATION, JwtUtil.BEARER_PREFIX + accessToken)
+                .header(HttpHeaders.CONTENT_TYPE, new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8).toString())
                 .retrieve()
                 .toEntity(new ParameterizedTypeReference<>() {});
 
@@ -88,7 +88,7 @@ public class NaverOAuth2Service implements OAuth2Service {
 
             if (body == null) throw new RuntimeException("Failed to get user info");
 
-            return new NaverResponse(body);
+            return new KakaoResponse(body);
         }
         else if (response.getStatusCode().is4xxClientError()) throw new RuntimeException("Failed to get user info");
         else throw new RuntimeException("Failed to get user info");

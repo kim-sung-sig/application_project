@@ -20,21 +20,21 @@ public class NaverResponse implements OAuth2Response {
 
     @Override
     public String getProviderId() {
-        return attribute.get("id").toString();
+        return attribute.getOrDefault("id", "").toString();
     }
 
     @Override
     public String getEmail() {
-        return attribute.get("email").toString();
+        return attribute.getOrDefault("email", "").toString();
     }
 
     @Override
     public String getName() {
-        return attribute.get("name").toString();
+        return attribute.getOrDefault("name", "").toString();
     }
 
     @Override
     public String getNickName() {
-        return attribute.get("nickname").toString();
+        return attribute.getOrDefault("nickname", "").toString();
     }
 }
