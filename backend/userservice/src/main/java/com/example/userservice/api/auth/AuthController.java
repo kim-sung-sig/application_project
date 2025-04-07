@@ -1,8 +1,11 @@
 package com.example.userservice.api.auth;
 
+import java.time.Duration;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -21,6 +24,7 @@ import com.example.userservice.application.auth.AuthService;
 import com.example.userservice.application.auth.response.JwtTokenResponse;
 import com.example.userservice.common.constants.ConstantsUtil;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +40,31 @@ public class AuthController {
 
     // 토큰 발급 with (username, password)
     @PostMapping("/login")
-    public ResponseEntity<JwtTokenResponse> login(@Valid @RequestBody UserLoginRequest loginRequest) {
+    public ResponseEntity<JwtTokenResponse> login(@Valid @RequestBody UserLoginRequest loginRequest, HttpServletResponse response) {
         log.debug("login request : {}", loginRequest);
-        JwtTokenResponse response = authService.createTokenByUsernameAndPassword(loginRequest);
-        log.debug("login response : {}", response);
-        return ResponseEntity.ok(response);
+        JwtTokenResponse token = authService.createTokenByUsernameAndPassword(loginRequest);
+        log.debug("login response : {}", token);
+
+        var accessCookie = ResponseCookie.from("accessToken", token.accessToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofMinutes(ConstantsUtil.ACCESS_TOKEN_TTL))
+                .build();
+
+        var refreshCookie = ResponseCookie.from("refreshToken", token.refreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("None")
+                .maxAge(Duration.ofMinutes(ConstantsUtil.REFRESH_TOKEN_TTL))
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/oauth/login")

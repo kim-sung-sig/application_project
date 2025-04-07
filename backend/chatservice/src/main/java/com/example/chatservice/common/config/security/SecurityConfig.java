@@ -1,7 +1,6 @@
 package com.example.chatservice.common.config.security;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
@@ -16,9 +15,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -47,7 +43,7 @@ public class SecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance()) // Stateless
             .exceptionHandling(handle -> handle.authenticationEntryPoint(serverAuthenticationEntryPoint()))
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authenticationManager(jwtAuthenticationManager)
             .addFilterBefore(authenticationWebFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
             .authorizeExchange(exchange -> exchange
@@ -56,18 +52,18 @@ public class SecurityConfig {
             .build();
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:8080", "http://127.0.0.1:3000", "http://localhost:8080", "http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
+    // @Bean
+    // CorsConfigurationSource corsConfigurationSource() {
+    //     CorsConfiguration configuration = new CorsConfiguration();
+    //     configuration.setAllowedOrigins(List.of("http://127.0.0.1:8080", "http://127.0.0.1:3000", "http://localhost:8080", "http://localhost:3000"));
+    //     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+    //     configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    //     configuration.setAllowCredentials(true);
         
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", configuration);
+    //     return source;
+    // }
 
     private AuthenticationWebFilter authenticationWebFilter() {
         AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(jwtAuthenticationManager);
