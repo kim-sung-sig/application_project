@@ -133,7 +133,7 @@ export default {
   methods: {
     async handleLogin() {
       try {
-        const response = await axios.post(`${apiBaseUrl}/api/v1/auth/token`, {
+        const response = await axios.post(`${apiBaseUrl}/api/v1/auth/login`, {
           username: this.username,
           password: this.password,
         });
@@ -146,10 +146,15 @@ export default {
 
         this.$router.push("/");
       } catch (error) {
-        if (error.response && error.response.status === 403) {
-          alert("비밀번호 실패횟수 초과로 계정이 잠겼습니다.");
+        console.error("Login error:", error.response?.data || error.message);
+        if (error.response) {
+          if (error.response.status === 403) {
+            alert("비밀번호 실패횟수 초과로 계정이 잠겼습니다.");
+          } else {
+            alert("Login failed: " + (error.response.data?.message || error.message));
+          }
         } else {
-          alert("Login failed!");
+          alert("Network error occurred. Please try again.");
         }
       }
     },

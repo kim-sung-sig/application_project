@@ -12,10 +12,14 @@ public class GatewayCorsConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOriginPattern("*");
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000"); // 프론트 주소
+
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+
+        config.addExposedHeader("Authorization");
+        config.addExposedHeader("Access-Control-Allow-Origin");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

@@ -1,5 +1,6 @@
 package com.example.userservice.application.auth.components.oauth2.dto;
 
+import java.util.Collections;
 import java.util.Map;
 
 import lombok.ToString;
@@ -20,23 +21,24 @@ public class KakaoResponse implements OAuth2Response {
 
     @Override
     public String getProviderId() {
-        throw new UnsupportedOperationException("Unimplemented method 'getProviderId'");
+        return String.valueOf(attribute.getOrDefault("id", ""));
     }
 
     @Override
     public String getEmail() {
-        throw new UnsupportedOperationException("Unimplemented method 'getEmail'");
+        return "";
     }
 
     @Override
     public String getName() {
-        throw new UnsupportedOperationException("Unimplemented method 'getName'");
+        Map<String, Object> properties = (Map<String, Object>) attribute.getOrDefault("properties", Collections.emptyMap());
+        return String.valueOf(properties.getOrDefault("nickname", ""));
     }
 
     @Override
     public String getNickName() {
-        throw new UnsupportedOperationException("Unimplemented method 'getNickName'");
+        Map<String, Object> properties = (Map<String, Object>) attribute.getOrDefault("properties", Collections.emptyMap());
+        return String.valueOf(properties.getOrDefault("nickname", ""));
     }
-    
-    
+
 }
