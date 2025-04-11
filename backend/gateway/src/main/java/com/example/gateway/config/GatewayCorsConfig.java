@@ -1,5 +1,7 @@
 package com.example.gateway.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -12,7 +14,11 @@ public class GatewayCorsConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:3000");
+
+        config.setAllowedOrigins(List.of(
+            "http://localhost:3000",
+            "http://localhost"
+        ));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 
