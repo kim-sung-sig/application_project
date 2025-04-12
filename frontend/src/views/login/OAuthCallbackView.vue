@@ -34,7 +34,7 @@ onMounted(async () => {
     });
 
     // 토큰 정보 추출
-    const { accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken } = response.data.data;
 
     // 토큰 저장
     localStorage.setItem("accessToken", accessToken);

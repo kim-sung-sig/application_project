@@ -1,4 +1,7 @@
+import axios from "axios";
 import { createRouter, createWebHistory } from 'vue-router';
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const routes = [
   {
@@ -29,20 +32,38 @@ const routes = [
   },
 ]
 
-async function tryRefreshToken() {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) return false;
+async function tryValidAccessToken() {
+  const accessToken = localStorage.getItem("accessToken");
+  if (!accessToken) return false;
 
   try {
-    const response = await fetch('/api/v1/auth/token/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken })
+    const response = await axios.post(`${apiBaseUrl}/api/v1/auth/token/validate`, {
+      accessToken: accessToken
     });
 
     if (!response.ok) return false;
 
-    const { accessToken, refreshToken } = response.data;
+    const { isValid } = response.data.data;
+
+    return isValid;
+  } catch (err) {
+    console.error('refresh error', err);
+    return false;
+  }
+}
+
+async function tryRefreshToken() {
+  const savedRefreshToken = localStorage.getItem("refreshToken");
+  if (!savedRefreshToken) return false;
+
+  try {
+    const response = await axios.post(`${apiBaseUrl}/api/v1/auth/token/refresh`, {
+      refreshToken: savedRefreshToken
+    });
+
+    if (!response.ok) return false;
+
+    const { accessToken, refreshToken } = response.data.data;
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
 
@@ -62,21 +83,23 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const isPublicPath = to.path.startsWith("/auth") || to.path.startsWith("/login/oauth2/code");
 
-  if (isPublicPath) {
-    return next();
-  }
+  if (isPublicPath) return next();
 
   // 인증 경로
   const accessToken = localStorage.getItem("accessToken");
+  const refreshToken = localStorage.getItem("refreshToken");
 
-  if (!accessToken) {
-    const refreshed = await tryRefreshToken();
-    if (!refreshed) {
-      return next("/auth/signin");
-    }
+  if (accessToken) {
+    const isValid = await tryValidAccessToken();
+    if (isValid) return next();
   }
 
-  next();
+  if (refreshToken) {
+    const refreshed = await tryRefreshToken();
+    if (refreshed) return next();
+  }
+
+  return next("/auth/signin");
 });
 
 export default router

@@ -138,7 +138,7 @@ export default {
           password: this.password,
         });
 
-        const { accessToken, refreshToken } = response.data;
+        const { accessToken, refreshToken } = response.data.data;
 
         // 토큰을 localStorage에 저장
         localStorage.setItem("accessToken", accessToken);

@@ -2,7 +2,7 @@ package com.example.userservice.domain.entity;
 
 import java.util.UUID;
 
-import com.example.userservice.common.util.UUIDv7Generator;
+import com.example.userservice.common.util.UuidUtil;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,7 +50,7 @@ public class PasswordHistory extends BaseEntity {
     @PrePersist
     protected void onPrePersist() {
         super.onPrePersist();
-        if (id == null) id = UUIDv7Generator.generate();
+        if (id == null) id = UuidUtil.generate();
         log.debug("User onPrePersist");
     }
 

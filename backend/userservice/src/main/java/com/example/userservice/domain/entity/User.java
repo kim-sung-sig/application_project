@@ -8,7 +8,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.userservice.common.enums.EventType;
 import com.example.userservice.common.util.EventPublisher;
-import com.example.userservice.common.util.UUIDv7Generator;
+import com.example.userservice.common.util.UuidUtil;
 import com.example.userservice.domain.event.user.UserEvent;
 
 import jakarta.persistence.Column;
@@ -153,7 +153,7 @@ public class User extends BaseEntity {
     @PrePersist
     protected void onPrePersist() {
         super.onPrePersist();
-        if (id == null) id = UUIDv7Generator.generate();
+        if (id == null) id = UuidUtil.generate();
         log.debug("User onPrePersist");
     }
 

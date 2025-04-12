@@ -19,7 +19,7 @@ public class EventPublisher {
     }
 
     @PostConstruct
-    private void init() {
+    public void init() {
         log.debug("EventPublisher initialized");
         if (applicationEventPublisher == null) {
             throw new RuntimeException("applicationEventPublisher is null");

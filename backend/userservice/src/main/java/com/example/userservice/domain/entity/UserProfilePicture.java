@@ -6,7 +6,7 @@ import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.userservice.common.enums.IsUsed;
-import com.example.userservice.common.util.UUIDv7Generator;
+import com.example.userservice.common.util.UuidUtil;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -76,7 +76,7 @@ public class UserProfilePicture extends BaseEntity {
     @PrePersist
     protected void onPrePersist() {
         super.onPrePersist();
-        if (id == null) id = UUIDv7Generator.generate();
+        if (id == null) id = UuidUtil.generate();
     }
 
     @PostPersist
