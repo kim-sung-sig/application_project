@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -12,10 +13,13 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import com.example.userservice.api.auth.exception.CustomAuthException;
+import com.example.userservice.api.auth.exception.CustomAuthException.AuthErrorCode;
 import com.example.userservice.api.auth.request.OAuthRequest;
 import com.example.userservice.api.auth.service.surports.OAuth2Response;
 import com.example.userservice.api.auth.service.surports.OAuth2ServiceInterface;
 import com.example.userservice.api.auth.service.surports.dto.NaverResponse;
+import com.example.userservice.common.exception.TemporaryException;
 import com.example.userservice.common.util.JwtUtil;
 
 import jakarta.annotation.PostConstruct;
@@ -61,18 +65,22 @@ public class NaverOAuth2Service implements OAuth2ServiceInterface {
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .body(params)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                    log.error("4xx error during(get access token) request to Naver. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
+                    throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
+                    log.error("5xx error during(get access token) request to Naver. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
+                    throw new TemporaryException(5);
+                })
                 .toEntity(new ParameterizedTypeReference<>() {});
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            Map<String, Object> body = response.getBody();
+        Map<String, Object> body = response.getBody();
 
-            if (body == null) throw new RuntimeException("Failed to get access token");
+        if (body == null) throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
 
-            String accessToken = (String) body.get("access_token");
-            return accessToken;
-        }
-        else if (response.getStatusCode().is4xxClientError()) throw new RuntimeException("Failed to get access token");
-        else throw new RuntimeException("Failed to get access token");
+        String accessToken = (String) body.get("access_token");
+        return accessToken;
     }
 
     @Override
@@ -81,17 +89,21 @@ public class NaverOAuth2Service implements OAuth2ServiceInterface {
                 .uri("https://openapi.naver.com/v1/nid/me")
                 .header(HttpHeaders.AUTHORIZATION, JwtUtil.BEARER_PREFIX + accessToken)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                    log.error("4xx error during(get userInfo) request to Naver. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
+                    throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
+                    log.error("5xx error during(get userInfo) request to Naver. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
+                    throw new TemporaryException(5);
+                })
                 .toEntity(new ParameterizedTypeReference<>() {});
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            Map<String, Object> body = response.getBody();
+        Map<String, Object> body = response.getBody();
 
-            if (body == null) throw new RuntimeException("Failed to get user info");
+        if (body == null) throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get user info");
 
-            return new NaverResponse(body);
-        }
-        else if (response.getStatusCode().is4xxClientError()) throw new RuntimeException("Failed to get user info");
-        else throw new RuntimeException("Failed to get user info");
+        return new NaverResponse(body);
     }
 
 }

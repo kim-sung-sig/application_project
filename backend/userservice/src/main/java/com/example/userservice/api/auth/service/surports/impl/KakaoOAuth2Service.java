@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -13,10 +14,13 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import com.example.userservice.api.auth.exception.CustomAuthException;
+import com.example.userservice.api.auth.exception.CustomAuthException.AuthErrorCode;
 import com.example.userservice.api.auth.request.OAuthRequest;
 import com.example.userservice.api.auth.service.surports.OAuth2Response;
 import com.example.userservice.api.auth.service.surports.OAuth2ServiceInterface;
 import com.example.userservice.api.auth.service.surports.dto.KakaoResponse;
+import com.example.userservice.common.exception.TemporaryException;
 import com.example.userservice.common.util.JwtUtil;
 
 import jakarta.annotation.PostConstruct;
@@ -60,18 +64,22 @@ public class KakaoOAuth2Service implements OAuth2ServiceInterface {
                 .header(HttpHeaders.CONTENT_TYPE, new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8).toString())
                 .body(params)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                    log.error("4xx error during(get access token) request to Kakao. Request: {}, Response status: {}", req, res.getStatusCode());
+                    throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
+                    log.error("5xx error during(get access token) request to Kakao. Request: {}, Response status: {}", req, res.getStatusCode());
+                    throw new TemporaryException(5);
+                })
                 .toEntity(new ParameterizedTypeReference<>() {});
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            Map<String, Object> body = response.getBody();
+        Map<String, Object> body = response.getBody();
 
-            if (body == null) throw new RuntimeException("Failed to get access token");
+        if (body == null) throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
 
-            String accessToken = (String) body.get("access_token");
-            return accessToken;
-        }
-        else if (response.getStatusCode().is4xxClientError()) throw new RuntimeException("Failed to get access token");
-        else throw new RuntimeException("Failed to get access token");
+        String accessToken = (String) body.get("access_token");
+        return accessToken;
     }
 
     @Override
@@ -81,17 +89,21 @@ public class KakaoOAuth2Service implements OAuth2ServiceInterface {
                 .header(HttpHeaders.AUTHORIZATION, JwtUtil.BEARER_PREFIX + accessToken)
                 .header(HttpHeaders.CONTENT_TYPE, new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8).toString())
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                    log.error("4xx error during(get userInfo) request to Kakao. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
+                    throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
+                    log.error("5xx error during(get userInfo) request to Kakao. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
+                    throw new TemporaryException(5);
+                })
                 .toEntity(new ParameterizedTypeReference<>() {});
 
-        if (response.getStatusCode().is2xxSuccessful()) {
-            Map<String, Object> body = response.getBody();
+        Map<String, Object> body = response.getBody();
 
-            if (body == null) throw new RuntimeException("Failed to get user info");
+        if (body == null) throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
 
-            return new KakaoResponse(body);
-        }
-        else if (response.getStatusCode().is4xxClientError()) throw new RuntimeException("Failed to get user info");
-        else throw new RuntimeException("Failed to get user info");
+        return new KakaoResponse(body);
     }
 
 }

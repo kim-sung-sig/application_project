@@ -1,0 +1,38 @@
+package com.example.userservice.api.user.domain.repository.profile;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Repository;
+
+import com.example.userservice.api.user.domain.entity.QUserProfilePicture;
+import com.example.userservice.api.user.domain.model.FilePath;
+import com.example.userservice.common.enums.IsUsed;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import lombok.RequiredArgsConstructor;
+
+@Repository
+@RequiredArgsConstructor
+public class UserProfilePictureRepositoryCustomImpl implements UserProfilePictureRepositoryCustom {
+
+    private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Optional<FilePath> findFilePathById(UUID profileId) {
+        QUserProfilePicture profile = QUserProfilePicture.userProfilePicture;
+
+        FilePath result = queryFactory
+            .select(Projections.constructor(FilePath.class,
+                profile.filePath))
+            .from(profile)
+            .where(
+                profile.id.eq(profileId)
+                .and(profile.status.ne(IsUsed.DELETED)))
+            .fetchOne();
+
+        return Optional.ofNullable(result);
+    }
+
+}

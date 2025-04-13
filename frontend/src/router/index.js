@@ -41,8 +41,6 @@ async function tryValidAccessToken() {
       accessToken: accessToken
     });
 
-    if (!response.ok) return false;
-
     const { isValid } = response.data.data;
 
     return isValid;
@@ -60,8 +58,6 @@ async function tryRefreshToken() {
     const response = await axios.post(`${apiBaseUrl}/api/v1/auth/token/refresh`, {
       refreshToken: savedRefreshToken
     });
-
-    if (!response.ok) return false;
 
     const { accessToken, refreshToken } = response.data.data;
     localStorage.setItem("accessToken", accessToken);

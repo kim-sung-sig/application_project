@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +31,7 @@ public class FileUtil {
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
     public static Path saveFile(@NonNull Path targetDirPath, @NonNull MultipartFile file) throws IOException {
+
         // 파일 유효성 검사
         validateFile(file);
 
@@ -38,11 +40,9 @@ public class FileUtil {
 
         // 파일 이름과 확장자 분리
         String originalFileName = file.getOriginalFilename();
-        String fileNameWithoutExt = getFileBaseName(originalFileName);
-        String fileExtension = getFileExtension(originalFileName);
 
         // 파일 경로와 이름이 중복되면 "(1)", "(2)" 방식으로 이름 변경
-        Path finalTargetPath = getUniqueFilePath(targetDirPath, fileNameWithoutExt, fileExtension);
+        Path finalTargetPath = getUniqueFilePath(targetDirPath, originalFileName);
 
         // 파일 저장
         Files.copy(file.getInputStream(), finalTargetPath, StandardCopyOption.COPY_ATTRIBUTES);
@@ -111,27 +111,19 @@ public class FileUtil {
     }
 
     public static MediaType getContentType(String filePath) {
-        String extension = getFileExtension(filePath);
-
-        if (!StringUtils.hasText(extension))
-            return MediaType.APPLICATION_OCTET_STREAM;  // 확장자가 없으면 기본값 반환
-
-        return switch (extension.toLowerCase()) {
-            case "jpg", "jpeg" -> MediaType.IMAGE_JPEG;
-            case "png" -> MediaType.IMAGE_PNG;
-            case "gif" -> MediaType.IMAGE_GIF;
-            case "webp" -> MediaType.valueOf("image/webp"); // WebP 지원 추가
-            default -> MediaType.APPLICATION_OCTET_STREAM;
-        };
+        return MediaTypeFactory.getMediaType(filePath)
+                .orElse(MediaType.APPLICATION_OCTET_STREAM);
     }
 
-    public static Path getUniqueFilePath(Path targetDirPath, String baseName, String extension) throws IOException {
-        Path targetPath = targetDirPath.resolve(baseName + "." + extension);
+    public static Path getUniqueFilePath(Path targetDirPath, String fileName) throws IOException {
+        Path targetPath = targetDirPath.resolve(fileName);
+        String baseName = getFileBaseName(fileName);
+        String extension = getFileExtension(fileName);
         AtomicInteger counter = new AtomicInteger(1);
 
         // 중복된 파일 이름이 있을 경우 "(1)", "(2)" 방식으로 이름 변경
         while (Files.exists(targetPath)) {
-            String newFileName = baseName + "(" + counter.getAndIncrement() + ")" + extension;
+            String newFileName = String.format("%s(%d).%s", baseName, counter.getAndIncrement(), extension);
             targetPath = targetDirPath.resolve(newFileName);
         }
 

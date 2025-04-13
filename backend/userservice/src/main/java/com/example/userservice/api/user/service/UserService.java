@@ -9,19 +9,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.userservice.api.user.domain.entity.NickNameHistory;
+import com.example.userservice.api.user.domain.entity.PasswordHistory;
+import com.example.userservice.api.user.domain.entity.User;
+import com.example.userservice.api.user.domain.entity.User.UserRole;
+import com.example.userservice.api.user.domain.entity.User.UserStatus;
+import com.example.userservice.api.user.domain.exception.UserNotFoundException;
+import com.example.userservice.api.user.domain.repository.history.NickNameHistoryRepository;
+import com.example.userservice.api.user.domain.repository.history.PasswordHistoryRepository;
+import com.example.userservice.api.user.domain.repository.user.UserRepository;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
 import com.example.userservice.common.exception.BusinessException;
 import com.example.userservice.common.util.CommonUtil;
-import com.example.userservice.domain.entity.NickNameHistory;
-import com.example.userservice.domain.entity.PasswordHistory;
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.entity.User.UserRole;
-import com.example.userservice.domain.entity.User.UserStatus;
-import com.example.userservice.domain.exception.UserNotFoundException;
-import com.example.userservice.domain.repository.history.NickNameHistoryRepository;
-import com.example.userservice.domain.repository.history.PasswordHistoryRepository;
-import com.example.userservice.domain.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

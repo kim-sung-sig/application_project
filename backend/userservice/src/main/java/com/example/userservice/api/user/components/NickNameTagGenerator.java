@@ -2,8 +2,8 @@ package com.example.userservice.api.user.components;
 
 import org.springframework.stereotype.Component;
 
-import com.example.userservice.domain.entity.NickNameHistory;
-import com.example.userservice.domain.repository.history.NickNameHistoryRepository;
+import com.example.userservice.api.user.domain.entity.NickNameHistory;
+import com.example.userservice.api.user.domain.repository.history.NickNameHistoryRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -1,13 +1,8 @@
 package com.example.userservice.common.config.securiry.handler;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -19,11 +14,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import com.example.userservice.common.constants.ConstantsUtil;
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.entity.User.UserStatus;
-import com.example.userservice.domain.repository.user.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.userservice.api.user.domain.entity.User;
+import com.example.userservice.api.user.domain.entity.User.UserStatus;
+import com.example.userservice.api.user.domain.repository.user.UserRepository;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,7 +56,6 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
             message = "UNKNOWN_ERROR";
 
         log.debug("Login Fail Message Convert to : {}", message);
-        returnMessage(response, message);
     }
 
     private String BadCredentialsExceptionHandle(String username) {
@@ -98,22 +90,6 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
         user.userLock();
         userRepository.save(user);
         log.debug("계정 잠김 처리 user : {}", user);
-    }
-
-    private void returnMessage(HttpServletResponse response, String message) throws IOException {
-        Map<String, Object> returnData = Collections.singletonMap(ConstantsUtil.RETURN_MESSAGE, message);
-
-        // 응답을 작성
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = objectMapper.writeValueAsString(returnData);
-
-        try (PrintWriter writer = response.getWriter()) {
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-            writer.write(jsonResponse);
-            writer.flush();
-        }
     }
 
 }

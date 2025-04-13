@@ -10,9 +10,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
-
-import com.example.userservice.common.constants.ConstantsUtil;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -21,71 +18,83 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private final String RETRY_AFTER = "retryAfterSeconds";
-    private final String ERRORS = "errors";
+    public static final String CODE = "code";
+    public static final String MESSAGE = "message";
+    public static final String ERRORS = "errors";
+    public static final String RETRY_AFTER = "retryAfterSeconds";
 
-    // 전역 예외
-    @ExceptionHandler(exception = {Exception.class})
+    // 기본 에러 포맷
+    private Map<String, Object> createErrorResponse(String message, String code, Map<String, String> errors) {
+        Map<String, Object> body = new HashMap<>();
+        body.put(CODE, code);
+        body.put(MESSAGE, message);
+
+        if (errors != null) {
+            body.put(ERRORS, errors);
+        }
+
+        return body;
+    }
+
+    // 일반적인 예외 처리 (시스템 예외)
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {
         log.error("시스템 오류 발생", e);
-        Map<String, Object> body = Map.of(
-            ConstantsUtil.RETURN_MESSAGE, "시스템 오류가 발생했습니다."
-        );
+
+        Map<String, Object> body = createErrorResponse(
+                "시스템 오류가 발생했습니다.",
+                "INTERNAL_SERVER_ERROR",
+                null);
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // 일시적인 예외
-    @ExceptionHandler(exception = {TemporaryException.class})
-    public ResponseEntity<Map<String, Object>> handleTemporaryException(TemporaryException e) {
-        Map<String, Object> body = Map.of(
-            ConstantsUtil.RETURN_MESSAGE, e.getMessage(),
-            RETRY_AFTER, e.getRetryAfterSeconds()
-        );
+    // Validation 예외
+    @ExceptionHandler(exception = { MethodArgumentNotValidException.class })
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 
-        return new ResponseEntity<>(body, HttpStatus.SERVICE_UNAVAILABLE);
+        Map<String, Object> body = createErrorResponse(
+                "입력값이 올바르지 않습니다.",
+                "VALIDATION_ERROR",
+                errors);
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    // EntityNotFoundException 예외
-    @ExceptionHandler(exception = {EntityNotFoundException.class})
+    // EntityNotFoundException 처리
+    @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(EntityNotFoundException e) {
-        Map<String, Object> body = Map.of(
-            ConstantsUtil.RETURN_MESSAGE, e.getMessage()
-        );
-
+        Map<String, Object> body = createErrorResponse(
+                e.getMessage(),
+                "ENTITY_NOT_FOUND",
+                null);
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
-    // Validation 예외
-    @ExceptionHandler(exception = {MethodArgumentNotValidException.class})
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
-            .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+    // 일시적인 예외 처리
+    @ExceptionHandler(TemporaryException.class)
+    public ResponseEntity<Map<String, Object>> handleTemporaryException(TemporaryException e) {
+        Map<String, Object> body = createErrorResponse(
+                e.getMessage(),
+                "TEMPORARY_ERROR",
+                null);
 
-        Map<String, Object> body = Map.of(
-            ConstantsUtil.RETURN_MESSAGE, "입력값이 올바르지 않습니다.",
-            ERRORS, errors
-        );
-
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        body.put(RETRY_AFTER, e.getRetryAfterSeconds());
+        return new ResponseEntity<>(body, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     // BusinessException 예외
-    @ExceptionHandler(exception = {BusinessException.class})
+    @ExceptionHandler(exception = { BusinessException.class })
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException e) {
-        Map<String, Object> body = Map.of(
-            ConstantsUtil.RETURN_MESSAGE, e.getMessage(),
-            ERRORS, e.getErrors()
-        );
+
+        Map<String, Object> body = createErrorResponse(
+                e.getMessage(),
+                "BUSINESS_ERROR",
+                e.getErrors());
+
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put(ConstantsUtil.RETURN_MESSAGE, ex.getReason());
-
-        return ResponseEntity.status(ex.getStatusCode()).body(errorResponse);
     }
 
 }

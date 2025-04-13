@@ -11,15 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.userservice.api.auth.repository.RefreshTokenRepository;
-import com.example.userservice.api.auth.request.UserLoginRequest;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
+import com.example.userservice.api.user.domain.entity.User.UserStatus;
+import com.example.userservice.api.user.domain.model.UserForSecurity;
+import com.example.userservice.api.user.domain.repository.user.UserRepository;
 import com.example.userservice.common.constants.ConstantsUtil;
 import com.example.userservice.common.util.CommonUtil;
 import com.example.userservice.common.util.JwtUtil;
 import com.example.userservice.common.util.PasswordUtil;
-import com.example.userservice.domain.entity.User.UserStatus;
-import com.example.userservice.domain.model.UserForSecurity;
-import com.example.userservice.domain.repository.user.UserRepository;
 import com.google.common.base.Objects;
 
 import lombok.RequiredArgsConstructor;
@@ -39,8 +38,8 @@ public class AuthService {
      * @return
      */
     @Transactional
-    public JwtTokenResponse createTokenByUsernameAndPassword(UserLoginRequest loginRequest) {
-        Optional<UserForSecurity> userOp = userRepository.findByUsernameForSecurity(loginRequest.username());
+    public JwtTokenResponse createTokenByUsernameAndPassword(String inputUsername, String inputPassword) {
+        Optional<UserForSecurity> userOp = userRepository.findByUsernameForSecurity(inputUsername);
 
         // username에 일치하는 사용자가 존재하는지 확인
         if (!userOp.isPresent()) {
@@ -54,7 +53,7 @@ public class AuthService {
         }
 
         // 사용자의 비밀번호 일치여부 확인
-        if (!PasswordUtil.matches(loginRequest.password(), user.password())) {
+        if (!PasswordUtil.matches(inputPassword, user.password())) {
             throw new BadCredentialsException("Invalid username or password");
         }
 

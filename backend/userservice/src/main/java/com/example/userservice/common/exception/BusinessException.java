@@ -7,7 +7,7 @@ import org.springframework.lang.NonNull;
 
 public class BusinessException extends RuntimeException {
 
-    private Map<String, Object> errors;
+    private Map<String, String> errors;
 
     // 기본 생성자 (단순 메시지만 전달할 경우)
     public BusinessException(String message) {
@@ -27,7 +27,7 @@ public class BusinessException extends RuntimeException {
         this.errors = Collections.unmodifiableMap(errors);
     }
 
-    public Map<String, Object> getErrors() {
+    public Map<String, String> getErrors() {
         return errors;
     }
 

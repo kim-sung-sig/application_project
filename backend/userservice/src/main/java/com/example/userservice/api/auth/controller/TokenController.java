@@ -43,4 +43,5 @@ public class TokenController {
         return RsData.success(isValid);
     }
 
+    // TODO 1. 로그아웃, 2. 토큰 API (role: ADMIN, )
 }
