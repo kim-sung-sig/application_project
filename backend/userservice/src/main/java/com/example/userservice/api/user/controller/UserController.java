@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
-import com.example.userservice.api.user.service.UserService;
+import com.example.userservice.api.user.resolver.UserCommandResolver;
+import com.example.userservice.api.user.service.UserCommandService;
+import com.example.userservice.api.user.service.UserQueryService;
 import com.example.userservice.common.config.securiry.dto.CustomUserDetails;
+import com.example.userservice.domain.entity.User;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserCommandResolver userCommandResolver;
+    private final UserCommandService userCommandService;
+    private final UserQueryService userQueryService;
 
     @GetMapping
     public ResponseEntity<Void> getUserList(
@@ -44,10 +49,9 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createUser(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody CreateUserCommand command) {
-        userService.createUser(command);
+    public ResponseEntity<Void> createUser(@RequestBody CreateUserCommand command) {
+        CreateUserCommand verified = userCommandResolver.createUser(command);
+        userCommandService.createUser(verified);
         return ResponseEntity.ok().build();
     }
 
@@ -56,7 +60,8 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable(name = "id") UUID targetUserId,
             @RequestBody UpdateUserCommand command) {
-        userService.updateUser(userDetails.id(), targetUserId, command);
+        User targetUser = userCommandResolver.updateUser(userDetails, targetUserId, command);
+        userCommandService.updateUser(targetUser, command);
         return ResponseEntity.ok().build();
     }
 

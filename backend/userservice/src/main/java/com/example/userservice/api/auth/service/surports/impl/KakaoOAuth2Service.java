@@ -18,7 +18,7 @@ import com.example.userservice.api.auth.exception.CustomAuthException;
 import com.example.userservice.api.auth.exception.CustomAuthException.AuthErrorCode;
 import com.example.userservice.api.auth.request.OAuthRequest;
 import com.example.userservice.api.auth.service.surports.OAuth2Response;
-import com.example.userservice.api.auth.service.surports.OAuth2ServiceInterface;
+import com.example.userservice.api.auth.service.surports.SocialOAuth2Service;
 import com.example.userservice.api.auth.service.surports.dto.KakaoResponse;
 import com.example.userservice.common.exception.TemporaryException;
 import com.example.userservice.common.util.JwtUtil;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component("kakao")
-public class KakaoOAuth2Service implements OAuth2ServiceInterface {
+public class KakaoOAuth2Service implements SocialOAuth2Service {
 
     private final RestClient restClient = RestClient.create();
 

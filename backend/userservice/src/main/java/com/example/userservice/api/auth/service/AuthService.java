@@ -12,13 +12,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.userservice.api.auth.repository.RefreshTokenRepository;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
-import com.example.userservice.api.user.domain.entity.User.UserStatus;
-import com.example.userservice.api.user.domain.model.UserForSecurity;
-import com.example.userservice.api.user.domain.repository.user.UserRepository;
 import com.example.userservice.common.constants.ConstantsUtil;
 import com.example.userservice.common.util.CommonUtil;
 import com.example.userservice.common.util.JwtUtil;
 import com.example.userservice.common.util.PasswordUtil;
+import com.example.userservice.domain.entity.User.UserStatus;
+import com.example.userservice.domain.model.UserForSecurity;
+import com.example.userservice.domain.repository.user.UserRepository;
 import com.google.common.base.Objects;
 
 import lombok.RequiredArgsConstructor;

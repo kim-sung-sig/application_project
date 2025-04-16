@@ -12,10 +12,10 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.userservice.api.user.domain.entity.User;
-import com.example.userservice.api.user.domain.exception.UserNotFoundException;
-import com.example.userservice.api.user.domain.model.UserForSecurity;
-import com.example.userservice.api.user.domain.repository.user.UserRepository;
+import com.example.userservice.domain.entity.User;
+import com.example.userservice.domain.exception.UserNotFoundException;
+import com.example.userservice.domain.model.UserForSecurity;
+import com.example.userservice.domain.repository.user.UserRepository;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

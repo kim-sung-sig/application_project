@@ -8,12 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.example.userservice.api.user.domain.entity.NickNameHistory;
-import com.example.userservice.api.user.domain.entity.User;
-import com.example.userservice.api.user.domain.entity.User.UserRole;
-import com.example.userservice.api.user.domain.entity.User.UserStatus;
-import com.example.userservice.api.user.domain.repository.history.NickNameHistoryRepository;
-import com.example.userservice.api.user.domain.repository.user.UserRepository;
+import com.example.userservice.domain.entity.NickNameHistory;
+import com.example.userservice.domain.entity.User;
+import com.example.userservice.domain.entity.User.UserRole;
+import com.example.userservice.domain.entity.User.UserStatus;
+import com.example.userservice.domain.repository.history.NickNameHistoryRepository;
+import com.example.userservice.domain.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

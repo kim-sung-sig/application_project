@@ -12,8 +12,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.example.userservice.api.user.domain.entity.User.UserRole;
-import com.example.userservice.api.user.domain.model.UserForSecurity;
+import com.example.userservice.domain.entity.User.UserRole;
+import com.example.userservice.domain.model.UserForSecurity;
 
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -116,7 +116,12 @@ public class JwtUtil {
                         .getPayload()
                         .get("role", String.class));
     }
-    
+
+    public static Date getExpiration(String token) {
+        return jwtParser.parseSignedClaims(token)
+                .getPayload().getExpiration();
+    }
+
     public static JwtUserInfo getUserInfo(String token) {
         UUID id = getUserId(token);
         String username = getUsername(token);

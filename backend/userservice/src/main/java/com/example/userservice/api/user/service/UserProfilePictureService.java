@@ -13,10 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.userservice.api.user.domain.model.FilePath;
-import com.example.userservice.api.user.domain.repository.profile.UserProfilePictureRepository;
-import com.example.userservice.api.user.domain.repository.user.UserRepository;
 import com.example.userservice.common.util.FileUtil;
+import com.example.userservice.domain.model.FilePath;
+import com.example.userservice.domain.repository.profile.UserProfilePictureRepository;
+import com.example.userservice.domain.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
