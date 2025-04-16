@@ -63,6 +63,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(ValidationException e) {
+        Map<String, Object> body = createErrorResponse(
+                "입력값이 올바르지 않습니다.",
+                "VALIDATION_ERROR",
+                e.getErrors());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
     // EntityNotFoundException 처리
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(EntityNotFoundException e) {
