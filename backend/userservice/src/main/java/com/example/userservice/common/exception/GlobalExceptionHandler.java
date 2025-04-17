@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -24,7 +25,7 @@ public class GlobalExceptionHandler {
     public static final String RETRY_AFTER = "retryAfterSeconds";
 
     // 기본 에러 포맷
-    private Map<String, Object> createErrorResponse(String message, String code, Map<String, String> errors) {
+    private Map<String, Object> createErrorResponse(String code, String message, Map<String, String> errors) {
         Map<String, Object> body = new HashMap<>();
         body.put(CODE, code);
         body.put(MESSAGE, message);
@@ -36,74 +37,57 @@ public class GlobalExceptionHandler {
         return body;
     }
 
+    private Map<String, Object> createErrorResponse(String code, String message) {
+        return createErrorResponse(code, message, null);
+    }
+
     // 일반적인 예외 처리 (시스템 예외)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {
-        log.error("시스템 오류 발생", e);
-
-        Map<String, Object> body = createErrorResponse(
-                "시스템 오류가 발생했습니다.",
-                "INTERNAL_SERVER_ERROR",
-                null);
-
+        Map<String, Object> body = createErrorResponse("INTERNAL_SERVER_ERROR", "시스템 오류가 발생했습니다.");
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // Validation 예외
-    @ExceptionHandler(exception = { MethodArgumentNotValidException.class })
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 
-        Map<String, Object> body = createErrorResponse(
-                "입력값이 올바르지 않습니다.",
-                "VALIDATION_ERROR",
-                errors);
+        Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", errors);
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    // Validation 예외
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(ValidationException e) {
-        Map<String, Object> body = createErrorResponse(
-                "입력값이 올바르지 않습니다.",
-                "VALIDATION_ERROR",
-                e.getErrors());
-
+        Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", e.getErrors());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     // EntityNotFoundException 처리
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(EntityNotFoundException e) {
-        Map<String, Object> body = createErrorResponse(
-                e.getMessage(),
-                "ENTITY_NOT_FOUND",
-                null);
+        Map<String, Object> body = createErrorResponse("ENTITY_NOT_FOUND", e.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     // 일시적인 예외 처리
     @ExceptionHandler(TemporaryException.class)
     public ResponseEntity<Map<String, Object>> handleTemporaryException(TemporaryException e) {
-        Map<String, Object> body = createErrorResponse(
-                e.getMessage(),
-                "TEMPORARY_ERROR",
-                null);
-
+        Map<String, Object> body = createErrorResponse("TEMPORARY_ERROR", e.getMessage());
         body.put(RETRY_AFTER, e.getRetryAfterSeconds());
-        return new ResponseEntity<>(body, HttpStatus.SERVICE_UNAVAILABLE);
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+                .body(body);
     }
 
     // BusinessException 예외
-    @ExceptionHandler(exception = { BusinessException.class })
+    @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException e) {
-
-        Map<String, Object> body = createErrorResponse(
-                e.getMessage(),
-                "BUSINESS_ERROR",
-                e.getErrors());
-
+        Map<String, Object> body = createErrorResponse("BUSINESS_ERROR", e.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
