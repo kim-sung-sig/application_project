@@ -1,4 +1,4 @@
-package com.example.userservice.common.config.securiry.filter;
+package com.example.userservice.common.filter;
 
 import java.io.IOException;
 import java.util.Collections;

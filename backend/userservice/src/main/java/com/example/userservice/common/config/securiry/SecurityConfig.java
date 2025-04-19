@@ -15,7 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.userservice.common.config.securiry.filter.JwtAuthenticationFilter;
+import com.example.userservice.common.filter.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +25,13 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private final String[] whiteList = {
+            "/api/v1/auth/login",           // 로그인
+            "/api/v1/auth/oauth/login",     // 소셜 로그인
+            "/api/v1/auth/token/refresh",   // 리프레시 토큰 발급
+            "/api/v1/auth/token/validate"   // 토큰 유효성 검사
+    };
 
     @Bean
     BCryptPasswordEncoder getBCryptPasswordEncoder(){
@@ -44,10 +51,10 @@ public class SecurityConfig {
             .httpBasic(HttpBasicConfigurer::disable)
             .formLogin(FormLoginConfigurer::disable)
             .oauth2Login(OAuth2LoginConfigurer::disable)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)   // JWT 필터 등록
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))       // 세션 사용 안함
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/oauth/login", "/api/v1/auth/token/refresh", "/api/v1/auth/token/validate").permitAll()
+                .requestMatchers(whiteList).permitAll()
                 .anyRequest().authenticated()
             )
             .build();

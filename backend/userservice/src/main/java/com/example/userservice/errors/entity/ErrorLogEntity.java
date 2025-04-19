@@ -1,4 +1,4 @@
-package com.example.userservice.domain.entity;
+package com.example.userservice.errors.entity;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

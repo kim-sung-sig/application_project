@@ -1,47 +1,41 @@
 package com.example.userservice.api.auth.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.userservice.api.auth.request.TokenRefreshRequest;
-import com.example.userservice.api.auth.request.TokenValidateRequest;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
-import com.example.userservice.api.auth.service.AuthService;
-import com.example.userservice.common.response.RsData;
-import com.example.userservice.common.util.JwtUtil;
+import com.example.userservice.api.auth.service.JwtTokenService;
+import com.example.userservice.common.response.ApiResponse;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/auth/token")
+@RequestMapping("/api/v1/tokens")
 @RequiredArgsConstructor
 public class TokenController {
 
-    private final AuthService authService;
+    private final JwtTokenService TokenService;
 
-    // 토큰 발급 with (refresh token)
-    @PostMapping("/refresh")
-    public ResponseEntity<RsData< JwtTokenResponse >> refreshToken(@Valid @RequestBody TokenRefreshRequest refreshToken) {
-        log.debug("refresh request : {}", refreshToken);
-
-        JwtTokenResponse response = authService.createTokenByRefreshToken(refreshToken.refreshToken());
-        log.debug("refresh response : {}", response);
-
-        return RsData.success(response);
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse< JwtTokenResponse >> getTokenList() {
+        return null;
     }
 
-    // accessToken Valified Check
-    @PostMapping("/validate")
-    public ResponseEntity<RsData<Boolean>> validateToken(@Valid @RequestBody TokenValidateRequest request) {
-        boolean isValid = JwtUtil.validateToken(request.accessToken());
-        return RsData.success(isValid);
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public String putMethodName(@PathVariable String id, @RequestBody String entity) {
+        return entity;
     }
 
-    // TODO 1. 로그아웃, 2. 토큰 API (role: ADMIN, )
+    // TODO 토큰 API (role: ADMIN, )
 }

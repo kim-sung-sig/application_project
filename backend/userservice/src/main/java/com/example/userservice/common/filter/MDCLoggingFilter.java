@@ -1,4 +1,4 @@
-package com.example.userservice.common.config.logging;
+package com.example.userservice.common.filter;
 
 import java.io.IOException;
 import java.util.UUID;
