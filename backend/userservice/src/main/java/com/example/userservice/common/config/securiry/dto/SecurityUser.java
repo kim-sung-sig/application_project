@@ -10,10 +10,10 @@ import java.util.UUID;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.example.userservice.api.user.entity.User;
+import com.example.userservice.api.user.entity.User.UserRole;
+import com.example.userservice.api.user.entity.User.UserStatus;
 import com.example.userservice.common.util.JwtUtil.JwtUserInfo;
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.entity.User.UserRole;
-import com.example.userservice.domain.entity.User.UserStatus;
 
 /**
  * SecurityUser is a record that represents a user in the security context.

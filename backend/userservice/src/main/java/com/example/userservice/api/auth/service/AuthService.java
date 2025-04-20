@@ -12,12 +12,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.example.userservice.api.auth.components.JwtTokenComponent;
 import com.example.userservice.api.auth.repository.RefreshTokenRepository;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
+import com.example.userservice.api.user.entity.User;
+import com.example.userservice.api.user.repository.UserRepository;
 import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.common.util.CommonUtil;
 import com.example.userservice.common.util.JwtUtil;
 import com.example.userservice.common.util.PasswordUtil;
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

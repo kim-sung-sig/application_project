@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.userservice.domain.repository.user.UserRepository;
+import com.example.userservice.api.user.repository.UserRepository;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

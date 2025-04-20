@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TokenController {
 
-    private final JwtTokenService TokenService;
+    private final JwtTokenService tokenService;
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")

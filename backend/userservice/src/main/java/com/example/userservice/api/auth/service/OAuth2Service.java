@@ -8,16 +8,18 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.example.userservice.api.auth.components.JwtTokenComponent;
+import com.example.userservice.api.auth.exception.CustomAuthException;
+import com.example.userservice.api.auth.exception.CustomAuthException.AuthErrorCode;
 import com.example.userservice.api.auth.request.OAuthRequest;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
 import com.example.userservice.api.auth.service.surports.OAuth2Response;
 import com.example.userservice.api.auth.service.surports.SocialOAuth2Service;
-import com.example.userservice.api.user.components.NickNameTagGenerator;
+import com.example.userservice.api.nickname.service.NickNameTagGenerator;
+import com.example.userservice.api.user.entity.User;
+import com.example.userservice.api.user.entity.User.UserRole;
+import com.example.userservice.api.user.entity.User.UserStatus;
+import com.example.userservice.api.user.repository.UserRepository;
 import com.example.userservice.common.config.securiry.dto.SecurityUser;
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.entity.User.UserRole;
-import com.example.userservice.domain.entity.User.UserStatus;
-import com.example.userservice.domain.repository.user.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +62,7 @@ public class OAuth2Service {
 
         return Optional.ofNullable(socialServices.get(provider))
                 .map(service -> service.getUserInfo(oauthRequest))
-                .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 소셜 로그인입니다."));
+                .orElseThrow(() -> new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "지원하지 않는 소셜 로그인입니다."));
     }
 
     private User saveOrUpdateUserAndGet(@NonNull OAuth2Response oauth2Response) {

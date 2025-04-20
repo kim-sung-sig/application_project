@@ -1,5 +1,8 @@
 package com.example.userservice.api.auth.exception;
 
+import lombok.Getter;
+
+@Getter
 public class CustomAuthException extends RuntimeException{
 
     private final AuthErrorCode code;
@@ -7,10 +10,6 @@ public class CustomAuthException extends RuntimeException{
     public CustomAuthException(AuthErrorCode code, String message) {
         super(message);
         this.code = code;
-    }
-
-    public AuthErrorCode getCode() {
-        return code;
     }
 
     public enum AuthErrorCode {

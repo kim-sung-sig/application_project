@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.userservice.api.user.entity.User;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
 import com.example.userservice.api.user.resolver.UserCommandResolver;
-import com.example.userservice.api.user.service.UserCommandService;
-import com.example.userservice.api.user.service.UserQueryService;
+import com.example.userservice.api.user.service.command.UserCommandService;
+import com.example.userservice.api.user.service.query.UserQueryService;
 import com.example.userservice.common.config.securiry.dto.SecurityUser;
-import com.example.userservice.domain.entity.User;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

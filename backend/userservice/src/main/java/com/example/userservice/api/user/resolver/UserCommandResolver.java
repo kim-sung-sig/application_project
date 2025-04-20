@@ -6,6 +6,10 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.example.userservice.api.user.entity.User;
+import com.example.userservice.api.user.entity.User.UserRole;
+import com.example.userservice.api.user.entity.exception.UserNotFoundException;
+import com.example.userservice.api.user.repository.UserRepository;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
 import com.example.userservice.api.user.validator.UserValidator;
@@ -13,10 +17,6 @@ import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.common.exception.BusinessException;
 import com.example.userservice.common.exception.ValidationException;
 import com.example.userservice.common.util.CommonUtil;
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.entity.User.UserRole;
-import com.example.userservice.domain.exception.UserNotFoundException;
-import com.example.userservice.domain.repository.user.UserRepository;
 import com.google.common.base.Objects;
 
 import lombok.RequiredArgsConstructor;

@@ -12,8 +12,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.example.userservice.api.user.entity.User.UserRole;
 import com.example.userservice.common.config.securiry.dto.SecurityUser;
-import com.example.userservice.domain.entity.User.UserRole;
 
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;

@@ -14,9 +14,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.entity.User.UserStatus;
-import com.example.userservice.domain.repository.user.UserRepository;
+import com.example.userservice.api.user.entity.User;
+import com.example.userservice.api.user.entity.User.UserStatus;
+import com.example.userservice.api.user.repository.UserRepository;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
