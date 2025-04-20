@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
 import com.example.userservice.api.user.validator.UserValidator;
-import com.example.userservice.common.config.securiry.dto.CustomUserDetails;
+import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.common.exception.BusinessException;
 import com.example.userservice.common.exception.ValidationException;
 import com.example.userservice.common.util.CommonUtil;
@@ -74,11 +74,9 @@ public class UserCommandResolver {
         return command;
     }
 
-    public User updateUser(CustomUserDetails userDetails, UUID targetUserId, UpdateUserCommand command) {
+    public User updateUser(SecurityUser securityUser, UUID targetUserId, UpdateUserCommand command) {
 
-        String currentUsername = userDetails.getUsername();
-
-        User currentUser = userRepository.findByUsername(currentUsername)
+        User currentUser = userRepository.findById(securityUser.id())
                 .orElseThrow(() -> new RuntimeException());
 
         if (!Objects.equal(currentUser.getRole(), UserRole.ROLE_ADMIN) && !Objects.equal(currentUser.getId(), targetUserId)) {

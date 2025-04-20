@@ -12,8 +12,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.domain.entity.User.UserRole;
-import com.example.userservice.domain.model.UserForSecurity;
 
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -43,7 +43,7 @@ public class JwtUtil {
     /**
      * JWT 생성
      */
-    public static String generateToken(UserForSecurity user, long second) {
+    public static String generateToken(SecurityUser user, long second) {
         Instant now = Instant.now();
         Date nowDate = Date.from(now);
         Date expirationDate = Date.from(now.plusSeconds(second));
@@ -134,4 +134,5 @@ public class JwtUtil {
         String username,
         UserRole role
     ) {}
+
 }

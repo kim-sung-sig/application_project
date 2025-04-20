@@ -18,7 +18,7 @@ import com.example.userservice.api.user.request.UpdateUserCommand;
 import com.example.userservice.api.user.resolver.UserCommandResolver;
 import com.example.userservice.api.user.service.UserCommandService;
 import com.example.userservice.api.user.service.UserQueryService;
-import com.example.userservice.common.config.securiry.dto.CustomUserDetails;
+import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.domain.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -35,14 +35,13 @@ public class UserController {
     private final UserQueryService userQueryService;
 
     @GetMapping
-    public ResponseEntity<Void> getUserList(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Void> getUserList(@AuthenticationPrincipal SecurityUser securityUser) {
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Void> getUser(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal SecurityUser securityUser,
             @PathVariable(name = "id") Long targetUserId) {
         log.info("사용자 정보 조회 요청");
         return ResponseEntity.ok().build();
@@ -57,17 +56,17 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateUser(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal SecurityUser securityUser,
             @PathVariable(name = "id") UUID targetUserId,
             @RequestBody UpdateUserCommand command) {
-        User targetUser = userCommandResolver.updateUser(userDetails, targetUserId, command);
+        User targetUser = userCommandResolver.updateUser(securityUser, targetUserId, command);
         userCommandService.updateUser(targetUser, command);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal SecurityUser securityUser,
             @PathVariable(name = "id") Long targetUserId) {
         return ResponseEntity.ok().build();
     }

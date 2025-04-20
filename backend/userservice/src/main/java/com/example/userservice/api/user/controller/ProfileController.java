@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.userservice.api.user.service.UserProfilePictureService;
-import com.example.userservice.common.config.securiry.dto.CustomUserDetails;
+import com.example.userservice.common.config.securiry.dto.SecurityUser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,21 +34,19 @@ public class ProfileController {
     @GetMapping("/profile/{profileId}")
     public ResponseEntity<Resource> getProfileResource(
             @PathVariable Long profileId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal SecurityUser userDetails) {
 
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{profileId}/download")
-    public ResponseEntity<Void> getUserProfileDetails(@AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long userId) {
+    public ResponseEntity<Void> getUserProfileDetails(@AuthenticationPrincipal SecurityUser userDetails, @PathVariable Long userId) {
 
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/profile/{profileId}/details")
-    public ResponseEntity<Void> getUserProfilesDetail(@AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long userId) {
+    public ResponseEntity<Void> getUserProfilesDetail(@AuthenticationPrincipal SecurityUser userDetails, @PathVariable Long userId) {
 
         return ResponseEntity.ok().build();
     }
@@ -56,17 +54,17 @@ public class ProfileController {
     
 
     @PostMapping("/profile")
-    public ResponseEntity<Void> createProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Void> createProfile(@AuthenticationPrincipal SecurityUser userDetails) {
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/profile/{profileId}")
-    public ResponseEntity<Void> updateProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Void> updateProfile(@AuthenticationPrincipal SecurityUser userDetails) {
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/profile/{profileId}")
-    public ResponseEntity<Void> deleteProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Void> deleteProfile(@AuthenticationPrincipal SecurityUser userDetails) {
         return ResponseEntity.ok().build();
     }
 
@@ -74,7 +72,7 @@ public class ProfileController {
      * 유저 mapping 용
      */
     @GetMapping("/user/{userId}/profile")
-    public ResponseEntity<Void> getUserProfiles(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Void> getUserProfiles(@AuthenticationPrincipal SecurityUser userDetails) {
         return ResponseEntity.ok().build();
     }
 

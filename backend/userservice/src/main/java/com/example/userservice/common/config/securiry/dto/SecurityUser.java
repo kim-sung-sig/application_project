@@ -4,70 +4,73 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.example.userservice.common.util.JwtUtil.JwtUserInfo;
 import com.example.userservice.domain.entity.User;
 import com.example.userservice.domain.entity.User.UserRole;
 import com.example.userservice.domain.entity.User.UserStatus;
 
-import lombok.Getter;
-import lombok.ToString;
+/**
+ * SecurityUser is a record that represents a user in the security context.
+ * It implements Serializable for serialization purposes.
+ * It contains fields such as id, username, password, role, status, loginFailCount,
+ * lastLoginAt, and createdAt.
+ * It also provides methods to create a SecurityUser from a User entity and to check
+ * if the user is locked or enabled.
+ */
+public record SecurityUser(
+    UUID id,
 
-@Getter
-@ToString
-public class SecurityUser implements Serializable {
+    String username,
+    UserRole role,
+
+    UserStatus status,
+    int loginFailCount,
+    LocalDateTime lastLoginAt,
+    LocalDateTime createdAt
+) implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final UUID id;
-
-    private final String username;
-
-    private final String password;
-
-    private final String role;
-
-    private final UserStatus status;
-
-    private final int loginFailCount;
-
-    private final LocalDateTime lastLoginAt;
-
-    private final LocalDateTime createdAt;
-
-    private final boolean isLocked;
-
-    private final boolean isEnabled;
-
-    private final Collection<? extends GrantedAuthority> authorities;
-
-
-    public SecurityUser(User user) {
-        this.id = user.getId();
-        this.username = user.getUsername();
-        this.password = user.getPassword();
-        this.role = user.getRole().name();
-        this.status = user.getStatus();
-        this.loginFailCount = user.getLoginFailCount();
-        this.lastLoginAt = user.getLastLoginAt();
-        this.createdAt = user.getCreatedAt();
-        this.isLocked = isLocked(user);
-        this.isEnabled = isEnabled(user);
-        this.authorities = createAuthorities(user.getRole());
+    public static SecurityUser of(User user) {
+        return new SecurityUser(
+            user.getId(),
+            user.getUsername(),
+            user.getRole(),
+            user.getStatus(),
+            user.getLoginFailCount(),
+            user.getLastLoginAt(),
+            user.getCreatedAt()
+        );
     }
 
-    private boolean isLocked(User user) {
-        return false;
+    public static SecurityUser of(JwtUserInfo userInfo) {
+        return new SecurityUser(
+            userInfo.id(),
+            userInfo.username(),
+            userInfo.role(),
+            null,
+            0,
+            null,
+            null
+        );
     }
 
-    private boolean isEnabled(User user) {
-        return true;
+    public boolean isEnabled() { // 1순위
+        boolean unEnabled = Objects.equals(UserStatus.DELETED, status) || Objects.equals(UserStatus.DISABLED, status);
+        return !unEnabled;
     }
 
-    private Collection<? extends GrantedAuthority> createAuthorities(UserRole role) {
+    public boolean isLocked() { // 2순위
+        return Objects.equals(UserStatus.LOCKED, status);
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
     }
 

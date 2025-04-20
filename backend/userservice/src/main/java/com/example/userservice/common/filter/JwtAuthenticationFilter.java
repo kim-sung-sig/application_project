@@ -1,7 +1,6 @@
 package com.example.userservice.common.filter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Optional;
 
 import org.springframework.lang.NonNull;
@@ -11,8 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.userservice.common.config.securiry.dto.CustomUserDetails;
+import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.common.util.JwtUtil;
+import com.example.userservice.common.util.JwtUtil.JwtUserInfo;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,18 +34,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Optional<String> token = JwtUtil.getJwtFromRequest(request);
 
         if (token.isPresent() && JwtUtil.validateToken(token.get())) {
-            var userInfo = JwtUtil.getUserInfo(token.get());
+            JwtUserInfo userInfo = JwtUtil.getUserInfo(token.get());
 
-            CustomUserDetails userDetails = new CustomUserDetails(
-                userInfo.id(),
-                userInfo.username(),
-                Collections.singletonList(userInfo.role().name())
-            );
+            SecurityUser securityUser = SecurityUser.of(userInfo);
 
             Authentication authToken = new UsernamePasswordAuthenticationToken(
-                userDetails,
+                securityUser,
                 "",
-                userDetails.getAuthorities()
+                securityUser.getAuthorities()
             );
 
             SecurityContextHolder.getContext().setAuthentication(authToken);

@@ -14,7 +14,7 @@ import com.example.userservice.api.auth.request.UserLoginRequest;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
 import com.example.userservice.api.auth.service.AuthService;
 import com.example.userservice.api.auth.service.OAuth2Service;
-import com.example.userservice.common.config.securiry.dto.CustomUserDetails;
+import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.common.response.ApiResponse;
 import com.example.userservice.common.util.JwtUtil;
 
@@ -72,7 +72,7 @@ public class LoginController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal SecurityUser userDetails) {
         log.debug("logout user : {}", userDetails);
 
         authService.logout(userDetails.id());

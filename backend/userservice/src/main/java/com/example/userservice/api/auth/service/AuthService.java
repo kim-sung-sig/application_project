@@ -9,17 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.userservice.api.auth.components.JwtTokenComponent;
 import com.example.userservice.api.auth.repository.RefreshTokenRepository;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
-import com.example.userservice.common.constants.ConstantsUtil;
+import com.example.userservice.common.config.securiry.dto.SecurityUser;
 import com.example.userservice.common.util.CommonUtil;
 import com.example.userservice.common.util.JwtUtil;
 import com.example.userservice.common.util.PasswordUtil;
 import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.entity.User.UserStatus;
-import com.example.userservice.domain.model.UserForSecurity;
 import com.example.userservice.domain.repository.user.UserRepository;
-import com.google.common.base.Objects;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +31,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    private final JwtTokenComponent jwtTokenComponent;              // jwt component
+
     /** 토큰 발급 (username, password)
      * @param loginRequest
      * @return
@@ -40,16 +40,29 @@ public class AuthService {
     @Transactional
     public JwtTokenResponse createTokenByUsernameAndPassword(String inputUsername, String inputPassword) {
 
+        // TODO exception 변경하기
         User user = userRepository.findByUsername(inputUsername)
                 .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
 
-                
         // 사용자의 비밀번호 일치여부 확인
         if (!PasswordUtil.matches(inputPassword, user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
         }
 
-        return createToken(user);
+        SecurityUser securityUser = SecurityUser.of(user);
+        if (!securityUser.isEnabled()) {
+            log.warn("[SECURITY WARNING] Disabled user attempted to login. username: {}, userId: {}", inputUsername, user.getId());
+            throw new BadCredentialsException("User account is disabled");
+        }
+
+        if (securityUser.isLocked()) {
+            log.warn("[SECURITY WARNING] Locked user attempted to login. username: {}, userId: {}", inputUsername, user.getId());
+            throw new LockedException("User account is locked");
+        }
+
+        JwtTokenResponse token = jwtTokenComponent.createToken(securityUser);
+        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", securityUser.id(), token.accessToken(), token.refreshToken());
+        return token;
     }
 
     /** 토큰 발급 (refreshToken)
@@ -78,14 +91,21 @@ public class AuthService {
                 });
 
         // 4. 유저 조회 (없으면 401 에러)
-        UserForSecurity user = userRepository.findByUserIdForSecurity(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.debug("[USER ERROR] User not found for refreshToken: {}, userId: {}", refreshToken, userId);
                     return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
                 });
 
-        // 5. 계정이 잠겼다면
-        if (Objects.equal(user.status(), UserStatus.LOCKED)) {
+        // 5. 인증 정보 객체 변환
+        SecurityUser securityUser = SecurityUser.of(user);
+
+        if (!securityUser.isEnabled()) {
+            log.warn("[SECURITY WARNING] Disabled user attempted to refresh token. userId: {}, refreshToken: {}", userId, refreshToken);
+            throw new BadCredentialsException("User account is disabled");
+        }
+
+        if (securityUser.isLocked()) {
             log.warn("[SECURITY WARNING] Locked user attempted to refresh token. userId: {}, refreshToken: {}", userId, refreshToken);
             throw new LockedException("User account is locked");
         }
@@ -93,23 +113,9 @@ public class AuthService {
         // 6. 새로운 토큰 발급 (성공 로그)
         log.info("[TOKEN SUCCESS] Refresh token({}) validated. Issuing new token for userId: {}", refreshToken, userId);
 
-        var response = createToken(user);
-        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", userId, response.accessToken(), response.refreshToken());
-        return response;
-    }
-
-    private JwtTokenResponse createToken(User user) {
-
-        // 기존 리프래쉬 토큰이 있다면 삭제
-        refreshTokenRepository.deleteRefreshToken(user.getId());
-
-        // 새로운 토큰 발급
-        String accessToken = JwtUtil.generateToken(user, ConstantsUtil.ACCESS_TOKEN_TTL);
-        String refreshToken = JwtUtil.generateRefreshToken(ConstantsUtil.REFRESH_TOKEN_TTL);
-        refreshTokenRepository.saveRefreshToken(refreshToken, user.getId()); // 저장소에 토큰저장
-
-        // 토큰 반환
-        return new JwtTokenResponse(accessToken, refreshToken);
+        JwtTokenResponse token = jwtTokenComponent.createToken(securityUser);
+        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", userId, token.accessToken(), token.refreshToken());
+        return token;
     }
 
     @Transactional

@@ -6,15 +6,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.userservice.domain.entity.User;
-import com.example.userservice.domain.exception.UserNotFoundException;
-import com.example.userservice.domain.model.UserForSecurity;
 import com.example.userservice.domain.repository.user.UserRepository;
 
 import jakarta.servlet.ServletException;
@@ -68,23 +62,23 @@ public class CustomLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
          */
     }
 
-    private String getReturnUrl(HttpServletRequest request, HttpServletResponse response) {
-        RequestCache requestCache = new HttpSessionRequestCache();
-        SavedRequest savedRequest = requestCache.getRequest(request, response);
+    // private String getReturnUrl(HttpServletRequest request, HttpServletResponse response) {
+    //     RequestCache requestCache = new HttpSessionRequestCache();
+    //     SavedRequest savedRequest = requestCache.getRequest(request, response);
 
-        String sessionRedirectUrl = (String) request.getSession().getAttribute("redirectUrl");
+    //     String sessionRedirectUrl = (String) request.getSession().getAttribute("redirectUrl");
 
-        String redirectUrl = (sessionRedirectUrl != null) ? sessionRedirectUrl :
-                            (savedRequest != null) ? savedRequest.getRedirectUrl() : "/";
-        log.debug("Redirecting to URL: {}", redirectUrl); // 디버깅용 로그 추가
-        return redirectUrl;
-    }
+    //     String redirectUrl = (sessionRedirectUrl != null) ? sessionRedirectUrl :
+    //                         (savedRequest != null) ? savedRequest.getRedirectUrl() : "/";
+    //     log.debug("Redirecting to URL: {}", redirectUrl); // 디버깅용 로그 추가
+    //     return redirectUrl;
+    // }
 
-    private void processUserLoggedIn(UserForSecurity userForSecurity) {
-        User loggedInUser = userRepository.findByUsername(userForSecurity.username())
-                .orElseThrow(() -> new UserNotFoundException());
+    // private void processUserLoggedIn(UserForSecurity userForSecurity) {
+    //     User loggedInUser = userRepository.findByUsername(userForSecurity.username())
+    //             .orElseThrow(() -> new UserNotFoundException());
 
-        loggedInUser.loginSuccess();
-        // userRepository.save(loggedInUser);
-    }
+    //     loggedInUser.loginSuccess();
+    //     // userRepository.save(loggedInUser);
+    // }
 }
