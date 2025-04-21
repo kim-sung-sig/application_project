@@ -1,5 +1,7 @@
 package com.example.userservice.api.user.service.command;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,7 +12,9 @@ import com.example.userservice.api.user.entity.User.UserStatus;
 import com.example.userservice.api.user.repository.UserRepository;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
+import com.example.userservice.api.user.validator.UserValidator;
 import com.example.userservice.common.exception.BusinessException;
+import com.example.userservice.common.exception.ValidationException;
 import com.example.userservice.common.util.CommonUtil;
 import com.example.userservice.common.util.PasswordUtil;
 import com.google.common.base.Objects;
@@ -24,38 +28,28 @@ import lombok.extern.slf4j.Slf4j;
 public class UserCommandService {
 
     private final UserRepository userRepository;
+
+    private final UserValidator userValidator;
     private final NickNameTagGenerator nickNameTagGenerator;
 
     // 회원 가입
     @Transactional
     public void createUser(CreateUserCommand command) {
 
+        // 값 유효성 검사
+        Map<String, String> validationErrors = userValidator.validate(command);
+        if (!CommonUtil.isEmpty(validationErrors)) {
+            throw new ValidationException(validationErrors);
+        }
+
         // 변수 추출
-        String username = command.username().trim();
-        if (!CommonUtil.isUsernameValid(username)) {
-            throw new BusinessException("Username is not valid");
-        }
+        String username = command.username();
+        String password = command.password();
+        String name = command.name();
+        String nickName = command.nickName();
+        String email = command.email();
 
-        String password = command.password().trim();
-        if (!CommonUtil.isPasswordValid(password)) {
-            throw new BusinessException("유효한 비밀번호가 아닙니다. 비밀번호는 8자 이상 20자 이하, 영문 대소문자, 숫자, 특수문자를 포함해야 합니다.");
-        }
-
-        String name = command.name().trim();
-        if (!CommonUtil.isNameValid(name)) {
-            throw new BusinessException("유효한 이름이 아닙니다.");
-        }
-
-        String nickName = command.nickName().trim();
-        if (!CommonUtil.isNickNameValid(nickName)) {
-            throw new BusinessException("유효한 닉네임이 아닙니다. 닉네임은 2자 이상, 16자 이하로 입력해야 합니다.");
-        }
-
-        String email = command.email().trim();
-        if (!CommonUtil.isEmailValid(email)) {
-            throw new BusinessException("유효한 이메일이 아닙니다.");
-        }
-
+        // DB 및 이메일 검증 검사
         if (userRepository.existsByUsername(username)) {
             throw new BusinessException("사용중인 아이디입니다.");
         }
@@ -109,7 +103,7 @@ public class UserCommandService {
             targetUser.changePassword(PasswordUtil.encode(newPassword));
         }
 
-        userRepository.save(targetUser);
+        userRepository.save(targetUser); // 명시적으로 저장 (필요하지 않을 수도 있음)
     }
 
     // 회원 탈퇴

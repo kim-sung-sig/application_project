@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.userservice.api.user.entity.User;
+import com.example.userservice.api.user.entity.User.UserRole;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
-import com.example.userservice.api.user.resolver.UserCommandResolver;
+import com.example.userservice.api.user.resolver.UserResolver;
 import com.example.userservice.api.user.service.command.UserCommandService;
 import com.example.userservice.api.user.service.query.UserQueryService;
 import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.google.common.base.Objects;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserCommandResolver userCommandResolver;
+    private final UserResolver userResolver;
     private final UserCommandService userCommandService;
     private final UserQueryService userQueryService;
 
@@ -49,8 +51,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody CreateUserCommand command) {
-        CreateUserCommand verified = userCommandResolver.createUser(command);
-        userCommandService.createUser(verified);
+        userCommandService.createUser(command);
         return ResponseEntity.ok().build();
     }
 
@@ -59,7 +60,19 @@ public class UserController {
             @AuthenticationPrincipal SecurityUser securityUser,
             @PathVariable(name = "id") UUID targetUserId,
             @RequestBody UpdateUserCommand command) {
-        User targetUser = userCommandResolver.updateUser(securityUser, targetUserId, command);
+
+        log.info("사용자 정보 수정 요청");
+        log.info("targetUserId : {}", targetUserId);
+        log.info("command : {}", command);
+
+        if (Objects.equal(securityUser.status(), UserRole.ROLE_ADMIN)) log.info("관리자 권한으로 사용자 정보 수정");
+        else if (Objects.equal(securityUser.id(), targetUserId)) log.info("일반 사용자 권한으로 사용자 정보 수정");
+        else {
+            log.info("권한 없음");
+            return ResponseEntity.status(403).build();
+        }
+
+        User targetUser = userResolver.resolve(targetUserId);
         userCommandService.updateUser(targetUser, command);
         return ResponseEntity.ok().build();
     }
@@ -67,7 +80,20 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @AuthenticationPrincipal SecurityUser securityUser,
-            @PathVariable(name = "id") Long targetUserId) {
+            @PathVariable(name = "id") UUID targetUserId) {
+
+        log.info("사용자 정보 삭제 요청");
+        log.info("targetUserId : {}", targetUserId);
+
+        if (Objects.equal(securityUser.status(), UserRole.ROLE_ADMIN)) log.info("관리자 권한으로 사용자 정보 삭제");
+        else if (Objects.equal(securityUser.id(), targetUserId)) log.info("일반 사용자 권한으로 사용자 정보 삭제");
+        else {
+            log.info("권한 없음");
+            return ResponseEntity.status(403).build();
+        }
+
+        User targetUser = userResolver.resolve(targetUserId);
+        userCommandService.deleteUser(targetUser);
         return ResponseEntity.ok().build();
     }
 

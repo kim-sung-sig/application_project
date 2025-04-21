@@ -1,29 +1,31 @@
 package com.example.userservice.api.user.request;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
 public record CreateUserCommand(
-    @NotNull
+
+    @NotEmpty
     @Size(min = 8, max = 20)
     String username,
 
-    @NotNull
+    @NotEmpty
     @Size(min = 8, max = 20)
     String password,
 
-    @NotNull
+    @NotEmpty
     @Size(min = 2, max = 10)
     String name,
 
-    @NotNull
+    @NotEmpty
     @Size(min = 2, max = 16)
     String nickName,
 
     @Email
-    @NotNull
+    @NotEmpty
     String email
+
 ) {
     public static final String FIELD_USERNAME = "username";
     public static final String FIELD_PASSWORD = "password";
