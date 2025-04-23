@@ -1,4 +1,4 @@
-package com.example.userservice.api.user.resolver;
+package com.example.userservice.api.user.components;
 
 import java.util.UUID;
 
@@ -26,6 +26,7 @@ public class UserResolver {
      */
     public User resolve(UUID targetUserId) {
         return userRepository.findById(targetUserId)
+                .filter(User::isActive)
                 .orElseThrow(UserNotFoundException::new);
 
     }

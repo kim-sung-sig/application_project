@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.springframework.context.ApplicationEvent;
 
 import com.example.userservice.api.user.entity.User;
-import com.example.userservice.api.user.entity.User.UserRole;
-import com.example.userservice.api.user.entity.User.UserStatus;
+import com.example.userservice.api.user.entity.UserRole;
+import com.example.userservice.api.user.entity.UserStatus;
 import com.example.userservice.common.enums.EventType;
 
 import lombok.Getter;

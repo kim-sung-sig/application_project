@@ -1,13 +1,16 @@
-package com.example.userservice.api.user.validator;
+package com.example.userservice.api.user.components;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Component;
+
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.common.util.CommonUtil;
 
+@Component
 public class UserValidator {
 
     public Map<String, String> validate(CreateUserCommand command) {
@@ -20,6 +23,19 @@ public class UserValidator {
         // password 검사
         this.validatePasswordFormat(command.password())
                 .ifPresent(msg -> validationErrors.put(CreateUserCommand.FIELD_PASSWORD, msg));
+
+        // name 검사
+        this.validateNameFormat(command.name())
+                .ifPresent(msg -> validationErrors.put(CreateUserCommand.FIELD_NAME, msg));
+
+        // nickname 검사
+        this.validateNickNameFormat(command.nickName())
+                .ifPresent(msg -> validationErrors.put(CreateUserCommand.FIELD_NICKNAME, msg));
+
+        // email 검사
+        this.validateEmailFormat(command.email())
+                .ifPresent(msg -> validationErrors.put(CreateUserCommand.FIELD_EMAIL, msg));
+
         return validationErrors;
     }
 

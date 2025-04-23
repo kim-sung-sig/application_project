@@ -7,12 +7,16 @@ import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.userservice.api.user.entity.event.user.UserEvent;
-import com.example.userservice.common.entity.BaseEntity;
+import com.example.userservice.common.config.jpa.CustomAuditingEntityListener;
+import com.example.userservice.common.config.jpa.entity.AuditEntity;
+import com.example.userservice.common.config.jpa.entity.AuditableEntity;
 import com.example.userservice.common.enums.EventType;
 import com.example.userservice.common.util.EventPublisher;
 import com.example.userservice.common.util.UuidUtil;
+import com.google.common.base.Objects;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -30,11 +34,13 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Entity
+@EntityListeners({AuditingEntityListener.class, CustomAuditingEntityListener.class})
 @Table(
     name = "dn_user",
     indexes = {
@@ -43,12 +49,11 @@ import lombok.extern.slf4j.Slf4j;
         @Index(name = "idx_user_email", columnList = "email"),
     }
 )
-@Getter @ToString(callSuper = true) @EqualsAndHashCode(callSuper = true)
-@EntityListeners(value = {AuditingEntityListener.class})
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-public class User extends BaseEntity {
+@Getter @ToString @EqualsAndHashCode
+public class User implements AuditableEntity {
 
     // key
     @Id
@@ -107,9 +112,8 @@ public class User extends BaseEntity {
     @Comment("사용자 이메일")
     private String email;
 
-    @Column(name = "phone")
-    @Comment("사용자 전화번호")
-    private String phone;
+    @Embedded @Setter
+    private AuditEntity audit;
 
     // method
     public void changeName(String name) {
@@ -155,10 +159,12 @@ public class User extends BaseEntity {
         this.loginFailCount = 0;
     }
 
-    @Override
+    public boolean isActive() {
+        return !Objects.equal(this.status, UserStatus.DELETED);
+    }
+
     @PrePersist
     protected void onPrePersist() {
-        super.onPrePersist();
         if (id == null) id = UuidUtil.generate();
         log.debug("User onPrePersist");
     }
@@ -170,54 +176,14 @@ public class User extends BaseEntity {
         log.debug("User persist EventPublisher.publish");
     }
 
-    @Override
     @PreUpdate
     protected void onPreUpdate() {
-        super.onPreUpdate();
+        
     }
 
     @PostUpdate
     protected void onPostUpdate() {
         EventPublisher.publish(new UserEvent(EventPublisher.class, this, EventType.UPDATED));
-    }
-
-    public enum UserRole {
-        ROLE_USER("ROLE_USER", "사용자"),
-        ROLE_ADMIN("ROLE_ADMIN", "관리자");
-
-        private final String key;
-        private final String title;
-
-        private UserRole(String key, String title) {
-            this.key = key;
-            this.title = title;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-    }
-
-    public enum UserStatus {
-        ENABLED("계정 활성화"),
-        LOCKED("계정 잠김"),
-        EXPIRED("계정 만료"),
-        DISABLED("계정 비활성화"),
-        DELETED("계정 삭제");
-
-        private final String title;
-
-        private UserStatus(String title) {
-            this.title = title;
-        }
-
-        public String getTitle() {
-            return title;
-        }
     }
 
 }

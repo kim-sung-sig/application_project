@@ -11,8 +11,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.example.userservice.api.user.entity.User;
-import com.example.userservice.api.user.entity.User.UserRole;
-import com.example.userservice.api.user.entity.User.UserStatus;
+import com.example.userservice.api.user.entity.UserRole;
+import com.example.userservice.api.user.entity.UserStatus;
 import com.example.userservice.common.util.JwtUtil.JwtUserInfo;
 
 /**
@@ -45,7 +45,7 @@ public record SecurityUser(
             user.getStatus(),
             user.getLoginFailCount(),
             user.getLastLoginAt(),
-            user.getCreatedAt()
+            user.getAudit().getCreatedAt()
         );
     }
 

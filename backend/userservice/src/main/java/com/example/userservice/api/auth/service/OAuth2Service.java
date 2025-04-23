@@ -16,8 +16,8 @@ import com.example.userservice.api.auth.service.surports.OAuth2Response;
 import com.example.userservice.api.auth.service.surports.SocialOAuth2Service;
 import com.example.userservice.api.nickname.service.NickNameTagGenerator;
 import com.example.userservice.api.user.entity.User;
-import com.example.userservice.api.user.entity.User.UserRole;
-import com.example.userservice.api.user.entity.User.UserStatus;
+import com.example.userservice.api.user.entity.UserRole;
+import com.example.userservice.api.user.entity.UserStatus;
 import com.example.userservice.api.user.repository.UserRepository;
 import com.example.userservice.common.config.securiry.dto.SecurityUser;
 

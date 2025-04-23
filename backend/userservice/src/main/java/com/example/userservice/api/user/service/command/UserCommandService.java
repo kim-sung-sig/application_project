@@ -6,13 +6,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.userservice.api.nickname.service.NickNameTagGenerator;
+import com.example.userservice.api.user.components.UserValidator;
 import com.example.userservice.api.user.entity.User;
-import com.example.userservice.api.user.entity.User.UserRole;
-import com.example.userservice.api.user.entity.User.UserStatus;
+import com.example.userservice.api.user.entity.UserRole;
+import com.example.userservice.api.user.entity.UserStatus;
 import com.example.userservice.api.user.repository.UserRepository;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
-import com.example.userservice.api.user.validator.UserValidator;
 import com.example.userservice.common.exception.BusinessException;
 import com.example.userservice.common.exception.ValidationException;
 import com.example.userservice.common.util.CommonUtil;

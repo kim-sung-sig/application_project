@@ -5,11 +5,14 @@ import java.util.UUID;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.example.userservice.common.entity.BaseEntity;
+import com.example.userservice.common.config.jpa.CustomAuditingEntityListener;
+import com.example.userservice.common.config.jpa.entity.AuditEntity;
+import com.example.userservice.common.config.jpa.entity.AuditableEntity;
 import com.example.userservice.common.enums.IsUsed;
 import com.example.userservice.common.util.UuidUtil;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -26,22 +29,23 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Entity
+@EntityListeners({AuditingEntityListener.class, CustomAuditingEntityListener.class})
 @Table(
     name = "dn_user_profile_picture",
     indexes = {
         @Index(name = "idx_user_profile_picture_user_id", columnList = "user_id"),
         @Index(name = "idx_user_profile_picture_status", columnList = "status"),})
-@EntityListeners(AuditingEntityListener.class)
-@Getter @ToString(callSuper = true) @EqualsAndHashCode(callSuper = false)
+@Getter @ToString @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Builder
-public class UserProfilePicture extends BaseEntity {
+public class UserProfilePicture implements AuditableEntity {
 
     // key
     @Id
@@ -73,10 +77,11 @@ public class UserProfilePicture extends BaseEntity {
     @Column(name = "file_url")
     private String fileUrl;
 
-    @Override
+    @Embedded @Setter
+    private AuditEntity audit;
+
     @PrePersist
     protected void onPrePersist() {
-        super.onPrePersist();
         if (id == null) id = UuidUtil.generate();
     }
 
@@ -84,10 +89,8 @@ public class UserProfilePicture extends BaseEntity {
     protected void onPostPersist() {
     }
 
-    @Override
     @PreUpdate
     protected void onPreUpdate() {
-        super.onPreUpdate();
     }
 
     @PostUpdate

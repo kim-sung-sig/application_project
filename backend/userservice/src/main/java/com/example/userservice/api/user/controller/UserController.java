@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.userservice.api.user.components.UserResolver;
 import com.example.userservice.api.user.entity.User;
-import com.example.userservice.api.user.entity.User.UserRole;
+import com.example.userservice.api.user.entity.UserRole;
 import com.example.userservice.api.user.request.CreateUserCommand;
 import com.example.userservice.api.user.request.UpdateUserCommand;
-import com.example.userservice.api.user.resolver.UserResolver;
 import com.example.userservice.api.user.service.command.UserCommandService;
 import com.example.userservice.api.user.service.query.UserQueryService;
 import com.example.userservice.common.config.securiry.dto.SecurityUser;

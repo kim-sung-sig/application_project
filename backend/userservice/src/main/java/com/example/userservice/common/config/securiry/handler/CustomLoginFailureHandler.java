@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.stereotype.Component;
 
 import com.example.userservice.api.user.entity.User;
-import com.example.userservice.api.user.entity.User.UserStatus;
+import com.example.userservice.api.user.entity.UserStatus;
 import com.example.userservice.api.user.repository.UserRepository;
 
 import jakarta.servlet.ServletException;
