@@ -12,17 +12,25 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.example.userservice.api.error.entity.ErrorLogEntity;
+import com.example.userservice.api.error.repository.ErrorLogRepository;
+
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     public static final String CODE = "code";
     public static final String MESSAGE = "message";
     public static final String ERRORS = "errors";
     public static final String RETRY_AFTER = "retryAfterSeconds";
+
+    private final ErrorLogRepository errorLogRepository;
 
     // 기본 에러 포맷
     private Map<String, Object> createErrorResponse(String code, String message, Map<String, String> errors) {
@@ -41,10 +49,21 @@ public class GlobalExceptionHandler {
         return createErrorResponse(code, message, null);
     }
 
+    private void logError(Exception e, HttpServletRequest request) {
+        try {
+            log.error("Exception occurred: {}", e.getMessage(), e);
+            ErrorLogEntity errorLog = ErrorLogEntity.of(e, request);
+            errorLogRepository.save(errorLog);
+        } catch (Exception ex) {
+            log.error("Error while logging exception: {}", ex.getMessage(), ex);
+        }
+    }
+
     // 일반적인 예외 처리 (시스템 예외)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception e) {
+    public ResponseEntity<Map<String, Object>> handleException(Exception e, HttpServletRequest request) {
         Map<String, Object> body = createErrorResponse("INTERNAL_SERVER_ERROR", "시스템 오류가 발생했습니다.");
+        logError(e, request);
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

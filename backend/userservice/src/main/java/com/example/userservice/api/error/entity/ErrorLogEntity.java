@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 
+import org.slf4j.MDC;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,6 +42,7 @@ public class ErrorLogEntity {
 
     private String userAgent;
     private String clientIp;
+    private String traceId;
     private LocalDateTime createdAt;
 
     public static ErrorLogEntity of(Exception e, HttpServletRequest request) {
@@ -51,6 +54,7 @@ public class ErrorLogEntity {
                 .stackTrace(getStackTraceAsString(e))
                 .userAgent(request.getHeader("User-Agent"))
                 .clientIp(request.getRemoteAddr())
+                .traceId(MDC.get("traceId"))
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -60,4 +64,5 @@ public class ErrorLogEntity {
         e.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
+
 }
