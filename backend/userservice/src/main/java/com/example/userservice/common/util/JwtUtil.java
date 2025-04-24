@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.example.userservice.api.user.entity.UserRole;
-import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.example.userservice.common.config.securiry.model.SecurityUser;
 
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -50,7 +50,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .claim("id", user.id().toString())
-                .claim("username", user.username())
+                .claim("username", user.getUsername())
                 .claim("role", user.role().name())
                 .issuedAt(nowDate)
                 .expiration(expirationDate)

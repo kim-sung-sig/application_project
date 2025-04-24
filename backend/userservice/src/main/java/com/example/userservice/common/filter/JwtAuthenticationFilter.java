@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.example.userservice.common.config.securiry.model.SecurityUser;
 import com.example.userservice.common.util.JwtUtil;
 import com.example.userservice.common.util.JwtUtil.JwtUserInfo;
 

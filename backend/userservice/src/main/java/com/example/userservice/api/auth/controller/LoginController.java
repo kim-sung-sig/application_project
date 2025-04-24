@@ -14,7 +14,7 @@ import com.example.userservice.api.auth.request.UserLoginRequest;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
 import com.example.userservice.api.auth.service.AuthService;
 import com.example.userservice.api.auth.service.OAuth2Service;
-import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.example.userservice.common.config.securiry.model.SecurityUser;
 import com.example.userservice.common.response.ApiResponse;
 import com.example.userservice.common.util.JwtUtil;
 

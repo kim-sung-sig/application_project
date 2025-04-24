@@ -19,7 +19,7 @@ import com.example.userservice.api.user.entity.User;
 import com.example.userservice.api.user.entity.UserRole;
 import com.example.userservice.api.user.entity.UserStatus;
 import com.example.userservice.api.user.repository.UserRepository;
-import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.example.userservice.common.config.securiry.model.SecurityUser;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

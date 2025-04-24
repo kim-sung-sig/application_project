@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.userservice.api.user.service.UserProfilePictureService;
-import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.example.userservice.common.config.securiry.model.SecurityUser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

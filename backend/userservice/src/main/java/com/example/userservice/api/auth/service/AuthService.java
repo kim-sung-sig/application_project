@@ -14,7 +14,7 @@ import com.example.userservice.api.auth.repository.RefreshTokenRepository;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
 import com.example.userservice.api.user.entity.User;
 import com.example.userservice.api.user.repository.UserRepository;
-import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.example.userservice.common.config.securiry.model.SecurityUser;
 import com.example.userservice.common.util.CommonUtil;
 import com.example.userservice.common.util.JwtUtil;
 import com.example.userservice.common.util.PasswordUtil;
@@ -55,7 +55,7 @@ public class AuthService {
             throw new BadCredentialsException("User account is disabled");
         }
 
-        if (securityUser.isLocked()) {
+        if (!securityUser.isAccountNonLocked()) {
             log.warn("[SECURITY WARNING] Locked user attempted to login. username: {}, userId: {}", inputUsername, user.getId());
             throw new LockedException("User account is locked");
         }
@@ -105,7 +105,7 @@ public class AuthService {
             throw new BadCredentialsException("User account is disabled");
         }
 
-        if (securityUser.isLocked()) {
+        if (!securityUser.isAccountNonLocked()) {
             log.warn("[SECURITY WARNING] Locked user attempted to refresh token. userId: {}, refreshToken: {}", userId, refreshToken);
             throw new LockedException("User account is locked");
         }

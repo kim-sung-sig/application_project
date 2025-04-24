@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.userservice.api.auth.repository.RefreshTokenRepository;
 import com.example.userservice.api.auth.response.JwtTokenResponse;
-import com.example.userservice.common.config.securiry.dto.SecurityUser;
+import com.example.userservice.common.config.securiry.model.SecurityUser;
 import com.example.userservice.common.constants.ConstantsUtil;
 import com.example.userservice.common.util.JwtUtil;
 
